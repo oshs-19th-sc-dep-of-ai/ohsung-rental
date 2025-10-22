@@ -32,7 +32,7 @@ class DatabaseManager(metaclass=__DatabaseManager):
             passwd=password,
             db="student24_db",
             charset="utf8mb4",
-            autocommit=False,
+            autocommit=True,
         )
         # 최초 연결
         self.db_conn = pymysql.connect(**self._conn_kwargs)
@@ -107,4 +107,3 @@ class DatabaseManager(metaclass=__DatabaseManager):
             finally:
                 self.db_conn = None
                 self.cursor = None
-

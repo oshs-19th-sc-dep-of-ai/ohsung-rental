@@ -1,0 +1,98 @@
+/* UM_content.css */
+.UMcontent {
+  justify-content: center;
+  padding: 0;
+  width: 100%;
+  margin: 0;
+}
+
+.UMcontent .container {
+  margin-top: 50px;
+  /* height: 400px;  ← 고정 높이 제거 */
+  overflow-y: auto;              /* ✅ 세로 스크롤 허용 */
+  overflow-x: hidden;            /* ✅ 가로 스크롤 차단 */
+  white-space: nowrap;
+  gap: 10px;
+  padding: 10px;
+  cursor: grab;
+}
+
+.UMcontent .container:active {
+  cursor: grabbing;
+}
+
+.UMcontent .container .block {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px;
+  background-color: #3493ff;
+  color: white;
+  border-radius: 10px;
+  height: 90px;
+  padding: 20px;
+  text-align: left;
+  min-width: 320px;              /* ✅ 모바일에서 너무 좁지 않게 */
+  font-weight: bold;
+}
+
+/* ✅ 연체(보라색) – 외부 .warn 규칙과 충돌 방지 */
+.UMcontent .container .block.warn {
+  background-color: rgb(202, 116, 255) !important;
+}
+
+.UMcontent .container .block .DeleteButton {
+  background-color: #426eff;
+  border: 0;
+  border-radius: 5px;
+  font-weight: bold;
+  color: white;
+  height: 40px;
+  width: 60px;
+  font-size: 16px;
+}
+
+/* ✅ 연체 버튼(보라색)도 우선순위 강화 */
+.UMcontent .container .block .DeleteButton.warn {
+  background-color: #8d5dff !important;
+}
+
+a {
+  display: flex;
+}
+
+.c {
+  margin: 8px;
+}
+
+.line {
+  border-top: 2px solid rgb(223, 223, 223);
+  margin-bottom: 10px;
+}
+
+.UMcontent .container .block.highlight {
+  background-color: orange;
+}
+
+.UMcontent .container .block .DeleteButton.highlight {
+  background-color: orangered;
+}
+
+.UMcontent span {
+  color: white;
+}
+.orange {
+  background-color: orange;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.purple {
+  background-color: #8d5dff;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.blue {
+  background-color: #426eff;
+  padding: 2px 6px;
+  border-radius: 4px;
+}

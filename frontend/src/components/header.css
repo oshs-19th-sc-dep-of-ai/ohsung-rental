@@ -1,0 +1,42 @@
+.Header {
+  background-color: #3493ff;
+  display: flex;
+  justify-content: center;
+}
+
+.HeaderObj {
+  display: flex;
+  justify-content: space-between;
+  padding: 0;
+  width: 90%;
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+  color: #fff;
+}
+
+.photo {
+  width: clamp(36px, 6vw, 50px);
+  height: clamp(36px, 6vw, 50px);
+  margin-top: 12px;
+}
+
+.photoo {
+  width: clamp(32px, 5vw, 40px);
+  height: clamp(32px, 5vw, 40px);
+  display: flex;
+}
+
+.logo {
+  margin-top: auto;
+  padding-bottom: 4px;
+  font-size: clamp(18px, 4.2vw, 24px);
+  color: #fff;
+  text-align: center;
+}
+
+.nav-links {
+  list-style-type: none;
+}

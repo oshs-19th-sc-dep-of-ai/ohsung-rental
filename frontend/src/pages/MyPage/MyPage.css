@@ -1,0 +1,149 @@
+/* MyPage.css */
+
+/* 폰에서 더 과감하게 작아지도록 값 재조정 */
+:root {
+  --radius: 12px;
+  --space: clamp(6px, 1.8vw, 14px);
+  --font-base: clamp(12px, 2.2vw, 16px);
+  --font-lg:   clamp(13px, 2.7vw, 18px);
+  --btn-h:     clamp(34px, 4.6vw, 44px);
+}
+
+.Mypage, .profile-card, .rental-table {
+  word-break: keep-all;  /* 한국어 단어 중간 줄바꿈 방지 */
+}
+
+.profile-card {
+  background-color: #2196F3;
+  color: white;
+  border-radius: var(--radius);
+  padding: calc(var(--space) * 2);
+  margin: var(--space);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.profile-card h2 {
+  font-size: clamp(16px, 3.6vw, 20px);
+  margin: 0 0 var(--space) 0;
+}
+
+/* 버튼 줄: 좁은 화면에서 자동 줄바꿈(2열) + 간격 최소화 */
+.btn-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: var(--space);
+  flex-wrap: wrap;
+}
+
+.btn-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ▼▼ 여기 세 버튼만 살짝 더 줄임 ▼▼ */
+.change-password-btn,
+.admin-page-btn,
+.logout-btn {
+  height: clamp(32px, 4.2vw, 42px);       /* 기존 대비 아주 조금 축소 */
+  padding: 0 clamp(8px, 2vw, 14px);       /* 좌우 여백 소폭 축소 */
+  box-sizing: border-box;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: var(--font-lg);
+  font-weight: 700;
+  border-radius: clamp(6px, 1.4vw, 8px);
+  border: none;
+  cursor: pointer;
+  margin: 0;
+
+  white-space: nowrap;
+  min-width: 40%;
+}
+/* ▲▲ 여기까지 세 버튼만 축소 ▲▲ */
+
+/* 색상 유지 */
+.change-password-btn,
+.admin-page-btn {
+  background-color: #fff;
+  color: #2196F3;
+}
+.change-password-btn:hover,
+.admin-page-btn:hover {
+  background-color: #1976D2;
+  color: #fff;
+}
+
+.logout-btn {
+  background-color: #f1f3f5;
+  color: #495057;
+  margin-left: auto;                       /* 유지: 오른쪽 정렬 */
+  height: clamp(30px, 3.8vw, 38px);
+  padding: 0 clamp(6px, 1.2vw, 10px);      /* ← 텍스트와 테두리 사이 여백 축소 */
+  min-width: 25%;                          /* ← 모바일에서만 2열 고려 */
+}
+.logout-btn:hover {
+  background-color: #e9ecef;
+  color: #212529;
+}
+
+/* 표 컨테이너: 가로 스크롤 허용 */
+.table-responsive {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 표: 최소폭 더 낮춤 + 셀 간격/폰트 축소 */
+.rental-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+  background: white;
+  color: #222;
+  font-size: var(--font-base);
+  margin-top: var(--space);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rental-table th,
+.rental-table td {
+  padding: clamp(6px, 1.4vw, 10px) clamp(8px, 1.8vw, 14px);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.rental-table th {
+  background: #3493ff;
+  color: #fff;
+  font-weight: bold;
+}
+
+.rental-table tr {
+  background: #f8faff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(52,147,255,0.05);
+}
+
+.rental-table tr:not(:last-child) {
+  border-bottom: 1px solid #e3eaf5;
+}
+
+/* 매우 좁은 화면(아이폰 SE 등)에서 한 번 더 줄이기 */
+@media (min-width: 520px) {
+  .btn-row {
+    flex-wrap: nowrap;                     /* 줄바꿈 금지 */
+  }
+  .change-password-btn,
+  .admin-page-btn,
+  .logout-btn {
+    min-width: auto;                       /* 너비 강제 해제 → 3개가 한 줄에 들어감 */
+  }
+}

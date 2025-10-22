@@ -14,76 +14,73 @@ export default function BContent({ ID }) {
     const { data } = await axios.get("http://localhost:5000/categories", { withCredentials: true });
     const list = data.categories || [];
     setCategories(list);
-    if (list.length > 0) setSelectedItem(prev => prev || list[0].category);
+
+    // 기본 선택: 첫 카테고리
+    if (list.length && !selectedItem) {
+      setSelectedItem(list[0].category);
+    }
   };
 
   const loadProducts = async (category) => {
+    if (!category) return;
     const { data } = await axios.get("http://localhost:5000/products", {
       params: { category },
-      withCredentials: true
+      withCredentials: true,
     });
     setUnits(data.products || []);
-    setSelectedNo(null);
+    setSelectedNo(null); // 카테고리 바뀌면 번호 선택 초기화
   };
 
-  // 1) 카테고리 로드
   useEffect(() => {
     loadCategories();
   }, []);
 
-  // 2) 선택된 카테고리의 제품 로드
   useEffect(() => {
-    if (selectedItem) loadProducts(selectedItem);
+    loadProducts(selectedItem);
   }, [selectedItem]);
 
-  // 3) 대여 요청
+  // 대여 처리
   const handleBorrow = async () => {
-    if (busy) return;
-    if (!ID) { alert("로그인이 필요합니다."); return; }
-    const chosen = units.find(u => u.display_no === Number(selectedNo));
-    if (!chosen) { alert("물품 번호를 선택하세요."); return; }
-
+    if (!selectedItem || selectedNo == null || busy) return;
+    if (!ID) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    setBusy(true);
     try {
-      setBusy(true);
+      // display_no → product_id 매칭
+      const chosen = units.find(u => u.display_no === selectedNo && u.is_available === 1);
+      if (!chosen) {
+        alert("선택한 번호는 대여할 수 없습니다.");
+        return;
+      }
 
-      // (1) 낙관적 업데이트: 바로 비활성화로 표시
-      setUnits(prev =>
-        prev.map(u =>
-          u.product_id === chosen.product_id ? { ...u, is_available: 0 } : u
-        )
-      );
-
-      // (2) 서버 요청
-      await axios.post(
-        `http://localhost:5000/rent_product/${chosen.product_id}`,
-        {},
-        { withCredentials: true }
-      );
-
-      // (3) 서버 데이터로 재검증 동기화
-      await loadProducts(selectedItem);
-
-      alert("대여 요청 완료!");
+      const body = {
+        student_id: ID,
+        display_no: selectedNo,
+        category: selectedItem,
+      };
+      const res = await axios.post("http://localhost:5000/rent", body, { withCredentials: true });
+      if (res.data?.status === "success") {
+        alert("대여가 완료되었습니다.");
+        // 재고 업데이트
+        await loadProducts(selectedItem);
+        await loadCategories();
+      } else {
+        alert(res.data?.message ?? "대여 처리 중 오류가 발생했습니다.");
+      }
     } catch (err) {
-      // 실패 시 롤백
-      setUnits(prev =>
-        prev.map(u =>
-          u.product_id === chosen.product_id ? { ...u, is_available: 1 } : u
-        )
-      );
-      const msg = err?.response?.data?.message || "대여 요청 중 오류가 발생했습니다.";
-      alert(msg);
+      console.error(err);
+      alert("대여 처리 중 오류가 발생했습니다.");
     } finally {
-      setSelectedNo(null);
       setBusy(false);
     }
   };
 
   return (
-    /* ⬇️ 캔버스 스케일/중앙 래퍼 (화면이 좁으면 비율 축소) */
     <div className="canvas-wrap">
-      {/* ⬇️ 실제 콘텐츠 박스: 항상 중앙, 고정 폭 */}
       <div className="borrow-container">
+        {/* 제목 */}
         <h2 className="borrow-title">물품 대여 시스템</h2>
 
         {/* 카테고리 라디오 */}
@@ -117,7 +114,6 @@ export default function BContent({ ID }) {
                   className={`num-btn ${picked ? "selected" : ""} ${disabled ? "disabled" : ""}`}
                   onClick={() => setSelectedNo(u.display_no)}
                   aria-pressed={picked}
-                  aria-label={`${selectedItem} ${u.display_no}${u.is_available === 0 ? " (대여중)" : ""}`}
                 >
                   {u.display_no}
                 </button>

@@ -1,91 +1,341 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
-import Header from "../../components/B_header";
-import "../../components/B_content.css"; // 기존 스타일 재사용
+import Header from "../../components/header";
+import "./Return.css";
+
+const STATUS_LABELS = {
+  0: "대여 중",
+  1: "반납 신청",
+  2: "반납 완료",
+};
+
+const STATUS_TEXT_TO_CODE = {
+  "대여 중": 0,
+  "반납 신청": 1,
+  "반납 완료": 2,
+};
+
+const normalizeRentals = (items) =>
+  (items ?? []).map((item) => {
+    const code =
+      typeof item.status_code === "number"
+        ? item.status_code
+        : STATUS_TEXT_TO_CODE[item.status] ?? 0;
+    const label = item.status ?? STATUS_LABELS[code] ?? "알 수 없음";
+    return { ...item, status_code: code, status: label };
+  });
+
+const dateTimeFormatter = new Intl.DateTimeFormat("ko-KR", {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+const formatDateTime = (value) => {
+  if (!value) {
+    return "-";
+  }
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : dateTimeFormatter.format(date);
+};
 
 function Return() {
   const location = useLocation();
   const ID = location.state?.ID || sessionStorage.getItem("ID");
+
+  const [student, setStudent] = useState(null);
   const [rentals, setRentals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [processingId, setProcessingId] = useState(null);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/profile", { withCredentials: true })
-      .then((response) => {
-        setRentals(response.data.rentals || []);
-      })
-      .catch(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/profile", {
+          withCredentials: true,
+        });
+        if (!alive) {
+          return;
+        }
+        setStudent(res.data?.student ?? null);
+        setRentals(normalizeRentals(res.data?.rentals));
+        setError("");
+      } catch (err) {
+        if (!alive) {
+          return;
+        }
+        const message =
+          err?.response?.data?.message ||
+          `대여 현황을 불러오지 못했습니다. (code: ${err?.response?.status ?? "unknown"})`;
+        setError(message);
+        setStudent(null);
         setRentals([]);
-      });
+      } finally {
+        if (alive) {
+          setLoading(false);
+        }
+      }
+    })();
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  // 반납 요청 함수 (API 엔드포인트에 맞게 수정)
-  const handleReturn = async (rental_id) => {
+  const activeRentals = useMemo(
+    () => rentals.filter((item) => item.status_code === 0),
+    [rentals],
+  );
+
+  const pendingRentals = useMemo(
+    () => rentals.filter((item) => item.status_code === 1),
+    [rentals],
+  );
+
+  const inProgressRentals = useMemo(
+    () => rentals.filter((item) => item.status_code !== 2),
+    [rentals],
+  );
+
+  const completedRentals = useMemo(
+    () => rentals.filter((item) => item.status_code === 2),
+    [rentals],
+  );
+
+  const headerUser = useMemo(() => {
+    if (student) {
+      return {
+        id: student.student_id,
+        name: student.student_name,
+        isAdmin: false,
+      };
+    }
+    if (ID) {
+      return { id: ID, name: "", isAdmin: false };
+    }
+    return null;
+  }, [student, ID]);
+
+  const heroStats = useMemo(
+    () => [
+      {
+        label: "대여 중",
+        value: loading ? "—" : activeRentals.length,
+        tone: "emerald",
+      },
+      {
+        label: "반납 신청",
+        value: loading ? "—" : pendingRentals.length,
+        tone: "amber",
+      },
+      {
+        label: "반납 완료",
+        value: loading ? "—" : completedRentals.length,
+        tone: "violet",
+      },
+    ],
+    [activeRentals.length, pendingRentals.length, completedRentals.length, loading],
+  );
+
+  const handleReturn = async (rental) => {
+    if (!rental || rental.status_code !== 0 || processingId) {
+      return;
+    }
+
+    setProcessingId(rental.rental_id);
     try {
-      await axios.post(
-        `http://localhost:5000/rental_request_return/${rental_id}`,
+      const res = await axios.post(
+        `http://localhost:5000/rental_request_return/${rental.rental_id}`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
-      alert("반납 요청이 완료되었습니다!");
+      alert(res.data?.message || "반납 신청이 접수되었습니다.");
+
       setRentals((prev) =>
-        prev.map((item) =>
-          item.rental_id === rental_id ? { ...item, status: "반납 대기 중" } : item
-        )
+        normalizeRentals(
+          prev.map((item) =>
+            item.rental_id === rental.rental_id
+              ? { ...item, status_code: 1, status: STATUS_LABELS[1] }
+              : item,
+          ),
+        ),
       );
-    } catch (error) {
-      alert("반납 요청에 실패했습니다.");
+    } catch (err) {
+      alert(err?.response?.data?.message || "반납 신청을 처리하지 못했어요.");
+    } finally {
+      setProcessingId(null);
     }
   };
 
-  return (
-    <div>
-      <Header />
-      <div className="container">
-        <h1 className="title">양심물품반납</h1>
-        <h2 className="subtitle">물품 반납 시스템</h2>
-        <div style={{ margin: "30px 0" }}>
-          <b>대여한 물품 목록</b>
-          <div className="rented-list" style={{ marginTop: "10px" }}>
-            {rentals.filter((item) => item.status === "대여 중").length === 0 ? (
-              <div>반납할 물품이 없습니다.</div>
-            ) : (
-              rentals
-                .filter((item) => item.status === "대여 중")
-                .map((item) => (
-                  <div key={item.rental_id} style={{ marginBottom: "20px", border: "1px solid #eee", borderRadius: "8px", padding: "10px" }}>
-                    <div>
-                      <b>{item.product_name}</b> (제품ID: {item.product_id})
-                    </div>
-                    <div>대여일: {item.rental_time}</div>
-                    <button
-                      style={{
-                        marginTop: "10px",
-                        background: "#3493ff",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "5px",
-                        padding: "6px 16px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleReturn(item.rental_id)}
-                    >
-                      반납하기
-                    </button>
-                  </div>
-                ))
-            )}
+  const renderRentalCard = (item, isActiveSection = true) => {
+    const isPending = item.status_code === 1;
+    const isRented = item.status_code === 0;
+    const isCompleted = item.status_code === 2;
+    const disableAction =
+      !isActiveSection || !isRented || processingId === item.rental_id;
+    const buttonText = isPending
+      ? "승인 대기중"
+      : isRented
+      ? "반납 신청"
+      : "완료";
+    const statusTone = isCompleted ? "completed" : isPending ? "pending" : "active";
+
+    return (
+      <article
+        key={item.rental_id}
+        className={`rental-card${isCompleted ? " rental-card--completed" : ""}`}
+      >
+        <div className="rental-card__header">
+          <div>
+            <h4 className="rental-card__title">{item.product_name}</h4>
+            <p className="rental-card__subtitle">물품 ID · {item.product_id}</p>
           </div>
+          <span className={`status-badge status-badge--${statusTone}`}>
+            {item.status}
+          </span>
         </div>
-        <div className="text">
-          <h5>
-            ※반납 후 <span>2일 이내</span> 미반납 시 불이익이 있습니다.<br />
-            ※파손 시 <span>배상</span>해야 하니 소중히 다뤄주세요.<br />
-            ※문의는 <span>학생회</span>에 해주세요.
-          </h5>
-        </div>
-      </div>
+
+        <dl className="rental-card__meta">
+          <div className="rental-card__meta-item">
+            <dt>대여일</dt>
+            <dd>{formatDateTime(item.rental_time)}</dd>
+          </div>
+          {item.expected_return_time && (
+            <div className="rental-card__meta-item">
+              <dt>반납 예정</dt>
+              <dd>{formatDateTime(item.expected_return_time)}</dd>
+            </div>
+          )}
+          {item.return_time && (
+            <div className="rental-card__meta-item">
+              <dt>반납 완료</dt>
+              <dd>{formatDateTime(item.return_time)}</dd>
+            </div>
+          )}
+        </dl>
+
+        {isActiveSection && (
+          <button
+            type="button"
+            onClick={() => handleReturn(item)}
+            disabled={disableAction}
+            className="return-card__action"
+          >
+            {processingId === item.rental_id ? "처리 중..." : buttonText}
+          </button>
+        )}
+      </article>
+    );
+  };
+
+  return (
+    <div className="return-page">
+      <Header user={headerUser} />
+      <main className="return-main">
+        <section className="return-hero">
+          <div className="return-hero__copy">
+            <span className="return-hero__eyebrow">양심 물품 반납</span>
+            <h1>대여 현황과 반납 진행 상태를 한눈에</h1>
+            <p>
+              대여 중인 물품과 반납 신청 상황을 실시간으로 확인하세요. 지연 없이
+              책임감 있게 반납하도록 도와드릴게요.
+            </p>
+          </div>
+
+          <div className="return-hero__meta">
+            {heroStats.map((stat) => (
+              <div
+                key={stat.label}
+                className={`return-hero__meta-card return-hero__meta-card--${stat.tone}`}
+              >
+                <span>{stat.label}</span>
+                <strong>{stat.value}</strong>
+              </div>
+            ))}
+            <div className="return-hero__meta-card return-hero__meta-card--identity">
+              <span>사용자</span>
+              <strong>
+                {student
+                  ? `${student.student_name} · ${student.student_id}`
+                  : ID
+                  ? `로그인 ID · ${ID}`
+                  : "로그인 정보 없음"}
+              </strong>
+              <p>
+                {student
+                  ? "학생 정보와 대여 기록을 기준으로 맞춤 안내를 제공합니다."
+                  : "로그인 후 학생 정보를 확인하면 더 정확한 안내를 받을 수 있습니다."}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {error && <div className="return-alert return-alert--error">{error}</div>}
+
+        {loading ? (
+          <div className="return-loading">
+            <span className="return-spinner" aria-hidden="true" />
+            대여 정보를 불러오는 중입니다...
+          </div>
+        ) : (
+          <section className="return-panels">
+            <div className="return-panel">
+              <div className="return-panel__head">
+                <h2>대여 중 · 반납 진행 중</h2>
+                <span className="return-chip">{inProgressRentals.length}건</span>
+              </div>
+              {inProgressRentals.length === 0 ? (
+                <p className="return-empty">현재 대여 중인 물품이 없습니다.</p>
+              ) : (
+                <div className="return-grid">
+                  {inProgressRentals.map((item) => renderRentalCard(item, true))}
+                </div>
+              )}
+              {pendingRentals.length > 0 && (
+                <p className="return-hint">
+                  반납 신청된 물품은 담당 선생님이 순차적으로 확인합니다.
+                </p>
+              )}
+            </div>
+
+            <div className="return-panel return-panel--secondary">
+              <div className="return-panel__head">
+                <h2>반납 완료 기록</h2>
+                <span className="return-chip return-chip--muted">
+                  {completedRentals.length}건
+                </span>
+              </div>
+              {completedRentals.length === 0 ? (
+                <p className="return-empty">아직 반납 완료된 기록이 없습니다.</p>
+              ) : (
+                <div className="return-grid return-grid--compact">
+                  {completedRentals.map((item) => renderRentalCard(item, false))}
+                </div>
+              )}
+            </div>
+
+            <div className="return-panel return-panel--guide">
+              <h3>반납 안내</h3>
+              <ul className="return-guide__list">
+                <li>
+                  대여일로부터 <strong>2일 이내</strong>에 반납을 완료해 주세요.
+                </li>
+                <li>
+                  파손 또는 분실 시 <strong>학생부</strong>와 협의하여 배상이 필요할
+                  수 있습니다.
+                </li>
+                <li>
+                  반납 문의는 학생부 또는 담당 선생님께 연락하면 빠르게 처리됩니다.
+                </li>
+              </ul>
+            </div>
+          </section>
+        )}
+      </main>
     </div>
   );
 }

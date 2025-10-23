@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, session
-from ..utils.database_util import DatabaseManager
+from utils.database_util import DatabaseManager
 
 # 블루프린트
 rental_return_bp = Blueprint('rental_return', __name__)

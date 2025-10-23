@@ -4,19 +4,19 @@ import Header from "../../components/UM_header";
 import Content from "../../components/UM_content";
 import axios from "axios";
 
-axios.defaults.withCredentials = true;  // ✅ 모든 요청에 credentials 포함
+axios.defaults.withCredentials = true;  // 모든 요청에 credentials 포함
 
 function UserManage() {
   const [adminID, setAdminID] = useState(null);
 
   useEffect(() => {
-    // ✅ 세션 확인 API 요청
+    // 세션 확인 API 호출
     axios
       .get("http://localhost:5000/check_session")
       .then((res) => {
-        console.log("📢 세션 정보:", res.data); // 디버깅용
+        console.log("현재 세션 정보:", res.data); // 디버깅용
         const { admin_id, is_admin } = res.data;
-        // 관리자 여부를 명확히 확인하여 렌더 여부 결정
+        // 관리자 세션인지 명확하게 확인하여 카드 렌더 결정
         if (is_admin && admin_id) setAdminID(admin_id);
         else setAdminID(null);
       })
@@ -27,12 +27,16 @@ function UserManage() {
   }, []);
 
   return (
-    <>
-      <div className="UserManage">
-        <Header />
-        {adminID ? <Content ID={adminID} /> : <p>세션 확인 중...</p>}
-      </div>
-    </>
+    <div className="UserManage">
+      <Header />
+      <main className="UserManage__content">
+        {adminID ? (
+          <Content ID={adminID} />
+        ) : (
+          <p className="UserManage__status">세션 확인 중...</p>
+        )}
+      </main>
+    </div>
   );
 }
 

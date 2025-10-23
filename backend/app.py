@@ -1,23 +1,25 @@
+from pathlib import Path
+
 from flask                 import Flask
 from flask_cors            import CORS
 from flask_session         import Session
 
-from .utils.database_util import DatabaseManager
-from .utils.config_util import ConfigManager as Config
+from utils.database_util import DatabaseManager
+from utils.config_util import ConfigManager as Config
 
-from .routes.auth import auth_bp
-from .routes.profile_route import profile_bp
-from .routes.rental import rental_bp
-from .routes.rental_return import rental_return_bp
-from .routes.admin import admin_bp
-from .routes.catalog import catalog_bp
+from routes.auth import auth_bp
+from routes.profile_route import profile_bp
+from routes.rental import rental_bp
+from routes.rental_return import rental_return_bp
+from routes.admin import admin_bp
+from routes.catalog import catalog_bp
 
 app = Flask(__name__)
 
 # 프론트엔드와 세션 유지 가능하게 설정 (프론트엔드에서 꼭 withCredentials: true 확인!)
 ALLOWED_ORIGINS = ["http://localhost:5173"]
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": ALLOWED_ORIGINS}})
-Config().read_file("config.json")
+Config().read_file(str(Path(__file__).resolve().with_name("config.json")))
 
 # Flask 세션 설정 추가
 app.config['SECRET_KEY']         = Config().get()["Session"]["Key"]

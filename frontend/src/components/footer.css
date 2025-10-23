@@ -1,15 +1,104 @@
-.footer {
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  background-color: #3493ff;
-  color: rgb(255, 255, 255);
-  padding-left: 10px;
+.home-footer {
+  position: relative;
+  margin-top: auto;
+  padding: clamp(32px, 6vw, 48px) 0;
+  background: linear-gradient(180deg, rgba(8, 47, 73, 0.12), rgba(2, 6, 23, 0.92));
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
 }
 
-.footer-links {
-  text-align: left;
+.home-footer::before {
+  content: "";
+  position: absolute;
+  inset: -30% 20% auto;
+  height: 220px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.18), transparent 70%);
+  filter: blur(16px);
+  pointer-events: none;
+}
+
+.home-footer__inner {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
   display: flex;
-  gap: 5px;
+  flex-direction: column;
+  gap: 22px;
+  color: rgba(226, 232, 240, 0.86);
+}
+
+.home-footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.home-footer__mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.55), rgba(129, 140, 248, 0.42));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 22px 44px -28px rgba(59, 130, 246, 0.7);
+}
+
+.home-footer__mark span {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid rgba(15, 23, 42, 0.85);
+  border-left-color: transparent;
+  border-bottom-color: transparent;
+  transform: rotate(45deg);
+}
+
+.home-footer__title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #f8fafc;
+}
+
+.home-footer__subtitle {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: rgba(148, 163, 184, 0.78);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.home-footer__links {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.home-footer__links a {
+  font-size: 0.88rem;
+  color: rgba(125, 211, 252, 0.9);
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.home-footer__links a:hover {
+  color: #f8fafc;
+  transform: translateY(-2px);
+}
+
+.home-footer__copyright {
+  margin: 12px 0 0;
+  font-size: 0.78rem;
+  color: rgba(148, 163, 184, 0.66);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .home-footer__inner {
+    width: calc(100% - 28px);
+  }
+
+  .home-footer__brand {
+    align-items: flex-start;
+  }
 }

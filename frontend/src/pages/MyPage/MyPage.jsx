@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Header from "../../components/M_header";
 import "./MyPage.css";
@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 function MyPage() {
   const [studentInfo, setStudentInfo] = useState(null);
   const [rentals, setRentals] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);           // 관리자 여부
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,11 +18,10 @@ function MyPage() {
         setRentals(response.data.rentals || []);
       })
       .catch((error) => {
-        console.error("프로필 정보를 불러오는데 실패했습니다.", error);
+        console.error("프로필 정보를 불러오지 못했습니다.", error);
       });
   }, []);
 
-  // 세션 확인으로 관리자 여부 판단
   useEffect(() => {
     axios
       .get("http://localhost:5000/check_session", { withCredentials: true })
@@ -33,105 +32,218 @@ function MyPage() {
       .catch(() => setIsAdmin(false));
   }, []);
 
-  // 로그아웃
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:5000/logout", {}, { withCredentials: true });
-      // 세션/스토리지 정리
+      await axios.post(
+        "http://localhost:5000/logout",
+        {},
+        { withCredentials: true },
+      );
       sessionStorage.removeItem("ID");
       sessionStorage.removeItem("ADMIN_ID");
       navigate("/", { replace: true });
-    } catch (e) {
-      alert("로그아웃 실패: " + (e?.response?.data?.message || "서버 오류"));
+    } catch (error) {
+      alert(`로그아웃 실패: ${error?.response?.data?.message ?? "서버 오류"}`);
     }
   };
 
+  const summary = useMemo(() => {
+    return rentals.reduce(
+      (acc, curr) => {
+        if (curr.status_code === 0) {
+          acc.active += 1;
+        } else if (curr.status_code === 1) {
+          acc.pending += 1;
+        } else if (curr.status_code === 2) {
+          acc.completed += 1;
+        }
+        return acc;
+      },
+      { active: 0, pending: 0, completed: 0 },
+    );
+  }, [rentals]);
+
+  const latestRental = useMemo(() => rentals[0] ?? null, [rentals]);
+
+  const renderDeadline = (expected) => {
+    if (!expected) {
+      return "일정 없음";
+    }
+    const now = new Date();
+    const target = new Date(expected);
+    let diff = target - now;
+    if (diff > 0) {
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      diff -= days * (1000 * 60 * 60 * 24);
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      diff -= hours * (1000 * 60 * 60);
+      const minutes = Math.floor(diff / (1000 * 60));
+      return `${days}일 ${hours}시간 ${minutes}분 남음`;
+    }
+    if (Math.abs(diff) < 1000 * 60) {
+      return "지금까지";
+    }
+    return "기한 초과";
+  };
+
+  const renderStatusBadge = (status, statusCode) => {
+    let badgeClass = "mypage-badge";
+    if (statusCode === 0) {
+      badgeClass += " mypage-badge--active";
+    } else if (statusCode === 1) {
+      badgeClass += " mypage-badge--pending";
+    } else if (statusCode === 2) {
+      badgeClass += " mypage-badge--completed";
+    }
+    return <span className={badgeClass}>{status}</span>;
+  };
+
+  const renderReturnInfo = (rentalTime, returnTime) => {
+    if (returnTime) {
+      return returnTime;
+    }
+    if (!rentalTime) {
+      return "반납기일 정보 없음";
+    }
+    const dueDate = new Date(rentalTime);
+    if (Number.isNaN(dueDate.getTime())) {
+      return "반납기일 정보 없음";
+    }
+    dueDate.setDate(dueDate.getDate() + 2);
+    const year = dueDate.getFullYear();
+    const month = String(dueDate.getMonth() + 1).padStart(2, "0");
+    const day = String(dueDate.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   return (
-    <div className="Mypage">
+    <div className="mypage-page">
       <Header />
-      <div className="profile-card">
-        <h2>프로필</h2>
-        <p>이름: {studentInfo?.student_name}</p>
-        <p>아이디: {studentInfo?.student_id}</p>
+      <main className="mypage-main">
+        <section className="mypage-hero">
+          <div className="mypage-hero__copy">
+            <span className="mypage-hero__eyebrow">My Rental Record</span>
+            <h1>반납까지 책임 있게, 나의 대여 기록</h1>
+            <p>
+              대여 현황과 이력, 반납 일정까지 한 눈에 확인해 보세요.
+              필요하다면 바로 비밀번호를 변경하거나 홈으로 돌아갈 수
+              있습니다.
+            </p>
+            <div className="mypage-hero__profile">
+              <dl>
+                <dt>이름</dt>
+                <dd>{studentInfo?.student_name ?? "-"}</dd>
+              </dl>
+              <dl>
+                <dt>학번</dt>
+                <dd>{studentInfo?.student_id ?? "-"}</dd>
+              </dl>
+              {latestRental && (
+                <dl>
+                  <dt>최근 대여</dt>
+                  <dd>{latestRental.rental_time ?? "-"}</dd>
+                </dl>
+              )}
+            </div>
+          </div>
+          <div className="mypage-hero__stats">
+            <div className="mypage-stat mypage-stat--emerald">
+              <span>대여 중</span>
+              <strong>{summary.active}</strong>
+            </div>
+            <div className="mypage-stat mypage-stat--sky">
+              <span>반납 신청</span>
+              <strong>{summary.pending}</strong>
+            </div>
+            <div className="mypage-stat mypage-stat--violet">
+              <span>완료</span>
+              <strong>{summary.completed}</strong>
+            </div>
+          </div>
+        </section>
 
-        <div className="btn-row">
-          <div className="btn-left">
-            <button
-              className="change-password-btn"
-              onClick={() => navigate("/info")}
-            >
-              비밀번호 변경
-            </button>
-
-            {isAdmin && (
+        <section className="mypage-actions">
+          <div className="mypage-card mypage-card--actions">
+            <div className="mypage-card__body">
+              <h2>계정 관리</h2>
+              <p>
+                계정 비밀번호를 안전하게 변경하거나, 관리자라면 전용 콘솔로
+                이동할 수 있습니다.
+              </p>
+            </div>
+            <div className="mypage-card__cta">
               <button
-                className="admin-page-btn"
-                onClick={() => navigate("/admin")}
+                type="button"
+                className="mypage-button"
+                onClick={() => navigate("/info")}
               >
-                관리자 페이지
+                비밀번호 변경
               </button>
-            )}
+              {isAdmin && (
+                <button
+                  type="button"
+                  className="mypage-button mypage-button--alt"
+                  onClick={() => navigate("/admin")}
+                >
+                  관리자 콘솔
+                </button>
+              )}
+              <button
+                type="button"
+                className="mypage-button mypage-button--ghost"
+                onClick={handleLogout}
+              >
+                로그아웃
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="mypage-history">
+          <div className="mypage-history__head">
+            <h2>나의 대여·반납 기록</h2>
+            <p>대여 신청부터 반납까지의 모든 진행 상황을 확인할 수 있습니다.</p>
           </div>
 
-          <button className="logout-btn" onClick={handleLogout}>
-            로그아웃
-          </button>
-        </div>
-      </div>
-
-      <div className="profile-card">
-        <h2>대여/반납 내역</h2>
-        {rentals.length === 0 ? (
-          <p>대여한 물품이 없습니다.</p>
-        ) : (
-          <div className="table-responsive">
-            <table className="rental-table">
-              <thead>
-                <tr>
-                  <th>물품명</th>
-                  <th>대여일</th>
-                  <th>반납일</th>
-                  <th>상태</th>
-                  <th>반납 예정까지</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rentals.map((item, idx) => {
-                  // 남은 시간 계산
-                  let leftText = "-";
-                  if (item.expected_return_time) {
-                    const now = new Date();
-                    const expected = new Date(item.expected_return_time);
-                    let diff = expected - now;
-                    if (diff > 0) {
-                      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                      diff -= days * (1000 * 60 * 60 * 24);
-                      const hours = Math.floor(diff / (1000 * 60 * 60));
-                      diff -= hours * (1000 * 60 * 60);
-                      const minutes = Math.floor(diff / (1000 * 60));
-                      leftText = `${days}일 ${hours}시간 ${minutes}분 남음`;
-                    } else if (Math.abs(diff) < 1000 * 60) {
-                      leftText = "지금까지";
-                    } else {
-                      leftText = "연체";
-                    }
-                  }
-
-                  return (
-                    <tr key={idx}>
-                      <td>{item.product_name}</td>
-                      <td>{item.rental_time}</td>
-                      <td>{item.return_time || "미정"}</td>
-                      <td>{item.status}</td>
-                      <td>{leftText}</td>
+          {rentals.length === 0 ? (
+            <div className="mypage-empty">
+              아직 대여한 물품이 없어요. 홈에서 마음에 드는 기자재를 찾아
+              대여해 보세요.
+            </div>
+          ) : (
+            <div className="mypage-history__table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>물품명</th>
+                    <th>대여일</th>
+                    <th>반납일</th>
+                    <th>상태</th>
+                    <th>반납 예정</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rentals.map((item) => (
+                    <tr key={item.rental_id}>
+                      <td data-label="물품명">{item.product_name}</td>
+                      <td data-label="대여일">{item.rental_time ?? "-"}</td>
+                      <td data-label="반납일">
+                        {renderReturnInfo(item.rental_time, item.return_time)}
+                      </td>
+                      <td data-label="상태">
+                        {renderStatusBadge(item.status, item.status_code)}
+                      </td>
+                      <td data-label="반납 예정">
+                        {renderDeadline(item.expected_return_time)}
+                      </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </main>
     </div>
   );
 }

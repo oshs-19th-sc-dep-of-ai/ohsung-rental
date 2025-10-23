@@ -1,85 +1,247 @@
 import "./content.css";
 import { Link, useLocation } from "react-router-dom";
+import { useEffect, useMemo } from "react";
 
-const Content = ({ id }) => {
+const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  weekday: "short",
+});
+
+const Content = ({ id, user }) => {
   const location = useLocation();
-  // location.state에 ID가 있으면 저장, 없으면 sessionStorage에서 불러오기
-  const ID = (id ?? location.state?.ID ?? location.state?.id ?? sessionStorage.getItem("ID"));
 
-  // 새로 들어온 ID가 있다면 sessionStorage에 저장
-  if (location.state?.id) {
-    sessionStorage.setItem("ID", location.state.id);
-  }
+  const locationId = location.state?.id;
+  const locationUpperId = location.state?.ID;
 
-  function IsIDManager() {
-    if (ID === "caoshsadmin") {
-      return (
-        <>
-          <Link to={"/Borrow"} state={{ ID }}>
-            <div className="Dayeo">🎒양심 물품 관리하기</div>
-          </Link>
-          <br />
-          <Link to={"/UserManage"} state={{ ID }}>
-            <div className="Dayeo">🎒사용자 관리하기</div>
-          </Link>
-          <div className="text">
-            <h5>
-              ※관리자들께선 <span>2일안에</span> 제출하지 않은 학생들을 잘
-              관리해주세요.
-              <br />
-              <br />※<span>양심 물품 관리하기는</span> 양심 물품을 추가 및
-              삭제를 하실 수 있습니다. <span>사용자 관리하기는</span> 학생들의
-              대여 상황을 관리할 수 있습니다.
-              <br />
-              <br />
-              ※그 밖에 오류 관련 문의 사항은 <span>AI융합부에게</span>{" "}
-              문의하십시오.
-            </h5>
-          </div>
-        </>
-      );
-    } else if (ID) {
-      return (
-        <>
-          <Link to={"/Borrow"} state={{ ID }}>
-            <div className="Dayeo">🎒양심 물품 대여하기</div>
-          </Link>
-          <Link to={"/Return"} state={{ ID }}>
-            <div
-              className="Dayeo"
-              style={{ marginTop: "10px", background: "3493ff" }}
-            >
-              📥양심 물품 반납하기
-            </div>
-          </Link>
-          <div className="text">
-            <h5>
-              ※빌린 양심 물품은 반납일을 기준으로 <span>2일안에</span> 제출하지
-              않을 시 불이익이 있습니다.
-              <br />
-              <br />
-              ※물품 파손시 <span>배상을</span> 해야하므로 소중하게 다뤄주세요.
-              <br />
-              <br />
-              ※그 밖에 문의 사항은 <span>학생회에</span> 문의하십시오.
-            </h5>
-          </div>
-        </>
-      );
-    } else {
-      // ID가 없을 때
-      return <div>잘못된 접근입니다. 다시 로그인 해주세요.</div>;
+  useEffect(() => {
+    if (locationId) {
+      sessionStorage.setItem("ID", locationId);
     }
-  }
+  }, [locationId]);
+
+  useEffect(() => {
+    if (id) {
+      sessionStorage.setItem("ID", id);
+    }
+  }, [id]);
+
+  const resolvedId = useMemo(
+    () =>
+      id ??
+      locationUpperId ??
+      locationId ??
+      sessionStorage.getItem("ID"),
+    [id, locationUpperId, locationId],
+  );
+
+  const isAdmin = user?.isAdmin || resolvedId === "caoshsadmin";
+  const todayText = dateFormatter.format(new Date());
+
+  const actions = isAdmin
+    ? [
+        {
+          title: "대여 현황 관리",
+          description:
+            "실시간 대여 로그를 확인하고 필요 시 대여 상태를 조정하세요.",
+          to: "/Borrow",
+          accent: "emerald",
+        },
+        {
+          title: "반납 상황 모니터링",
+          description:
+            "반납 신청 현황을 한눈에 보고 지연 건을 빠르게 처리합니다.",
+          to: "/Return",
+          accent: "sky",
+        },
+        {
+          title: "사용자 관리 콘솔",
+          description: "학생 계정을 검토하고 필요한 조치를 즉시 수행하세요.",
+          to: "/UserManage",
+          accent: "violet",
+        },
+      ]
+    : [
+        {
+          title: "양심 물품 대여하기",
+          description:
+            "필요한 물품을 선택하고 대여 규칙을 확인한 뒤 바로 대여하세요.",
+          to: "/Borrow",
+          accent: "emerald",
+        },
+        {
+          title: "반납 신청하기",
+          description:
+            "반납 예정일 2일 이내에 신청하면 더 빠르게 승인됩니다.",
+          to: "/Return",
+          accent: "sky",
+        },
+        {
+          title: "내 이용 기록 보기",
+          description:
+            "대여 및 반납 이력을 확인하고 알림을 받아보세요.",
+          to: "/MyPage",
+          accent: "violet",
+        },
+      ];
+
+  const journeySteps = isAdmin
+    ? [
+        {
+          title: "현황 파악",
+          detail: "대여·반납 통계를 확인하고 주의가 필요한 건을 체크합니다.",
+        },
+        {
+          title: "대응 및 조정",
+          detail: "반납 지연이나 파손 등 이슈를 기록하고 필요한 안내를 진행합니다.",
+        },
+        {
+          title: "커뮤니케이션",
+          detail: "학생과 소통하며 원활한 대여 문화를 만들어 갑니다.",
+        },
+      ]
+    : [
+        {
+          title: "대여 선택",
+          detail: "원하는 물품을 고르고 주의사항을 확인한 뒤 대여합니다.",
+        },
+        {
+          title: "책임 있게 사용",
+          detail: "정해진 기간 동안 깨끗하게 사용하고 손상에 주의하세요.",
+        },
+        {
+          title: "부드러운 반납",
+          detail: "반납 신청 후 안내에 따라 지정 장소에 물품을 반환합니다.",
+        },
+      ];
+
+  const guideHighlight = isAdmin
+    ? "정확한 기록과 빠른 대응이 학생들의 경험을 바꿉니다."
+    : "정해진 기간을 지키고, 다음 사용자를 위한 배려를 잊지 마세요.";
+
+  const noteBody = isAdmin
+    ? "학생들의 대여 문화를 지키는 핵심 관리자입니다. 대여 현황을 꼼꼼하게 살피고 문제가 생기면 즉시 대응해 주세요."
+    : "대여일로부터 2일 이내 반납이 원칙입니다. 파손이나 분실이 발생하면 학생부를 통해 배상 절차가 진행될 수 있어요.";
 
   return (
-    <div className="Content">
-      <div className="c">
-        <h2>📆 오늘의 날짜: {new Date().toLocaleDateString()}</h2>
-        <h3>여러분의 편의를 위해 노력하겠습니다.😊</h3>
-        <div className="line"></div>
-        {IsIDManager()}
-      </div>
+    <div className="home-content">
+      <section className="home-hero">
+        <div className="home-hero__copy">
+          <span className="home-hero__eyebrow">
+            {isAdmin ? "관리자 모드" : "양심 물품 대여"}
+          </span>
+          <h1>
+            {isAdmin
+              ? "스마트한 대여 관리, 더 신뢰받는 학생 문화"
+              : "필요한 순간에, 책임 있는 양심 물품 대여"}
+          </h1>
+          <p>
+            {isAdmin
+              ? "대여와 반납 흐름을 한눈에 파악하고 학생들의 이용 문화를 아름답게 가꿔 보세요."
+              : "몇 번의 터치로 대여를 신청하고 반납까지 매끄럽게 진행하세요. 언제나 신뢰를 쌓는 당신을 응원합니다."}
+          </p>
+          <div className="home-hero__meta">
+            <div className="home-hero__meta-card">
+              <span>오늘</span>
+              <strong>{todayText}</strong>
+            </div>
+            {resolvedId && (
+              <div className="home-hero__meta-card">
+                <span>사용자 ID</span>
+                <strong>{resolvedId}</strong>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="home-actions">
+        <div className="home-actions__head">
+          <h2>{isAdmin ? "관리 바로가기" : "빠른 액션"}</h2>
+          <p>
+            {isAdmin
+              ? "자주 사용하는 기능을 빠르게 호출하고, 상황 대응 속도를 높이세요."
+              : "자주 쓰는 동작을 카드에서 바로 실행해보세요. 애니메이션이 액션 상태를 안내합니다."}
+          </p>
+        </div>
+        <div className="home-actions__grid">
+          {actions.map((action, idx) => (
+            <Link
+              key={action.to}
+              to={action.to}
+              state={resolvedId ? { ID: resolvedId } : undefined}
+              className={`home-action-card home-action-card--${action.accent}`}
+            >
+              <div className="home-action-card__index" aria-hidden="true">
+                {idx + 1}
+              </div>
+              <div className="home-action-card__body">
+                <h3>{action.title}</h3>
+                <p>{action.description}</p>
+              </div>
+              <span className="home-action-card__cta">
+                바로가기
+                <svg
+                  aria-hidden="true"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                >
+                  <path
+                    d="M2 6h6"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="m5.5 3 3 3-3 3"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="home-timeline">
+        <div className="home-timeline__head">
+          <h2>이용 가이드</h2>
+          <p>{guideHighlight}</p>
+        </div>
+        <ol className="home-timeline__list">
+          {journeySteps.map((step, index) => (
+            <li key={step.title} className="home-timeline__item">
+              <div className="home-timeline__node" aria-hidden="true">
+                <span>{index + 1}</span>
+                <div className="home-timeline__spark" />
+              </div>
+              <div className="home-timeline__content">
+                <h3>{step.title}</h3>
+                <p>{step.detail}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="home-note">
+        <div className="home-note__card">
+          <div className="home-note__halo" aria-hidden="true" />
+          <h3>{isAdmin ? "관리자 체크 포인트" : "대여 시 꼭 기억하세요"}</h3>
+          <p>{noteBody}</p>
+          {!resolvedId && (
+            <p className="home-note__warning">
+              세션 정보를 찾을 수 없어요. 다시 로그인하면 기능을 이용할 수
+              있습니다.
+            </p>
+          )}
+        </div>
+      </section>
     </div>
   );
 };

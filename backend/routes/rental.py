@@ -2,7 +2,7 @@
 # 대여 가능한지 확인 후 가능하면 DB에 저장하고 상태 변경
 
 from flask import Blueprint, request, jsonify, session
-from ..utils.database_util import DatabaseManager
+from utils.database_util import DatabaseManager
 from flask_cors import cross_origin
 
 # 블루프린트
@@ -53,8 +53,8 @@ def rent_product(product_id):
 
     # 3) 대여 등록 (0 = 대여중)
     db.query(
-        "INSERT INTO Rentals (student_id, product_id, rental_time, rental_status) "
-        "VALUES (%(sid)s, %(pid)s, NOW(), %(st)s)",
+        "INSERT INTO Rentals (student_id, product_id, rental_time, return_time, rental_status) "
+        "VALUES (%(sid)s, %(pid)s, NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), %(st)s)",
         sid=sid, pid=product_id, st=RENTAL_STATUS_RENTED
     )
     db.commit()
@@ -102,8 +102,8 @@ def rental_request():
 
     # 3) 대여 등록 (0 = 대여중)
     db.query(
-        "INSERT INTO Rentals (student_id, product_id, rental_time, rental_status) "
-        "VALUES (%(sid)s, %(pid)s, NOW(), %(st)s)",
+        "INSERT INTO Rentals (student_id, product_id, rental_time, return_time, rental_status) "
+        "VALUES (%(sid)s, %(pid)s, NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), %(st)s)",
         sid=sid, pid=product_id, st=RENTAL_STATUS_RENTED
     )
     db.commit()

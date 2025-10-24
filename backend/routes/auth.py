@@ -1,5 +1,5 @@
 from flask import Blueprint, request, session, jsonify
-from utils.database_util import DatabaseManager
+from ..utils.database_util import DatabaseManager
 # from routes.admin import ADMIN_ID, ADMIN_PASSWORD  # 관리자 계정 (필요시 사용)
 
 auth_bp = Blueprint('auth', __name__)

@@ -164,6 +164,3 @@ cython_debug/
 
 flask_session/
 tests/
-
-config.json
-database/student24_db.sql

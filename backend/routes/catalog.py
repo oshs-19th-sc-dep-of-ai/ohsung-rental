@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from utils.database_util import DatabaseManager
+from ..utils.database_util import DatabaseManager
 
 catalog_bp = Blueprint("catalog", __name__)
 

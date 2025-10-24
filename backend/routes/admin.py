@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, session
-from utils.database_util import DatabaseManager
+from ..utils.database_util import DatabaseManager
 from datetime import datetime, timedelta
 
 admin_bp = Blueprint('admin', __name__)

@@ -4,7 +4,7 @@ from datetime import timedelta
 from flask import Blueprint, jsonify, request, session, url_for
 from werkzeug.security import generate_password_hash
 
-from utils.database_util import DatabaseManager
+from ..utils.database_util import DatabaseManager
 
 profile_bp = Blueprint("profile", __name__)
 

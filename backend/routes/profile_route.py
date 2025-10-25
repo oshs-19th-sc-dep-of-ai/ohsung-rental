@@ -67,7 +67,8 @@ def profile():
                    r.return_time,
                    r.rental_status,
                    r.id,
-                   r.product_id
+                   r.product_id,
+                   p.display_no
               FROM Rentals r
               JOIN Products p ON r.product_id = p.product_id
              WHERE r.student_id = %(student_id)s
@@ -90,6 +91,7 @@ def profile():
                 ),
                 "rental_id": rental[4],
                 "product_id": rental[5],
+                "display_no": rental[6],
             }
             for rental in rentals
         ]

@@ -44,7 +44,7 @@ def list_products():
       SELECT
         p.product_id,
         p.product_name,
-        p.product_id AS display_no,
+        p.display_no AS display_no,
         CASE WHEN EXISTS (
           SELECT 1 FROM Rentals r
           WHERE r.product_id = p.product_id
@@ -52,7 +52,7 @@ def list_products():
         ) THEN 0 ELSE 1 END AS is_available
       FROM Products p
       WHERE p.available = 1 AND p.category = %(category)s
-      ORDER BY p.product_id
+      ORDER BY p.display_no
     """
     res = db.query_many(sql, {"category": category})  # 쿼리값
     rows = _as_dict_rows(res.result, ["product_id", "product_name", "display_no", "is_available"])

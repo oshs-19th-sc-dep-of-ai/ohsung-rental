@@ -67,7 +67,7 @@ function MyPage() {
 
   const renderDeadline = (expected) => {
     if (!expected) {
-      return "일정 없음";
+      return "반납 완료";
     }
     const now = new Date();
     const target = new Date(expected);

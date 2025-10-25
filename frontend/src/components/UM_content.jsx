@@ -133,6 +133,7 @@ const Content = ({ ID }) => {
               const statusTone = isPending ? "pending" : isOverdue ? "overdue" : "active";
               const statusText = isPending ? "반납 승인 대기" : isOverdue ? "연체" : "정상 진행";
 
+              const displayNo = rental.display_no ?? rental.product_id ?? rental.id;
               return (
                 <div
                   key={rental.id}
@@ -143,7 +144,7 @@ const Content = ({ ID }) => {
                   <div className="block__head">
                     <div>
                       <h4 className="block__title">{rental.name}</h4>
-                      <p className="block__subtitle">ID · {rental.id}</p>
+                      <p className="block__subtitle">물품 ID · {displayNo}</p>
                     </div>
                     <span className={`status-badge status-badge--${statusTone}`}>{statusText}</span>
                   </div>

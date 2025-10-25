@@ -105,6 +105,7 @@ def list_rentals():
     rows = db.query(
         f"""
         SELECT r.id, r.student_id, s.student_name, r.product_id, p.product_name,
+               p.display_no,
                r.rental_time, r.return_time, r.rental_status
           FROM Rentals r
           JOIN Students s ON s.student_id = r.student_id
@@ -126,7 +127,7 @@ def list_rentals():
         return [y, m, d]
 
     result = []
-    for (rid, sid, sname, pid, pname, rtime, ret_time, rstatus) in rows:
+    for (rid, sid, sname, pid, pname, pdisplay, rtime, ret_time, rstatus) in rows:
         if isinstance(rtime, datetime):
             rtime_dt = rtime
         elif rtime is None:
@@ -146,6 +147,8 @@ def list_rentals():
             "deadline": to_arr_date(deadline_dt) or [],
             "state": (rstatus == RENTAL_STATUS_PENDING_RETURN),  # 기존 호환
             "status": int(rstatus),                               # ✅ 추가: 실제 상태 값
+            "product_id": pid,
+            "display_no": pdisplay,
         })
 
     return jsonify({"status":"success", "rentals": result}), 200

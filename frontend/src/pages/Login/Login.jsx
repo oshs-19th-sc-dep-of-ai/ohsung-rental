@@ -8,6 +8,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showHelp, setShowHelp] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (event) => {
@@ -65,7 +66,23 @@ function Login() {
       <section className="login-card">
         <header className="login-card__head">
           <h1>로그인</h1>
-          <p>학교 또는 관리자 계정으로 로그인하세요.</p>
+          <p>학교 계정으로 로그인하세요.</p>
+          <button
+            type="button"
+            className="login-card__help"
+            onClick={() => setShowHelp((prev) => !prev)}
+            aria-expanded={showHelp}
+          >
+            학교 아이디가 뭔가요?
+          </button>
+          {showHelp && (
+            <div className="login-card__help-text" role="note">
+              학교 아이디는 학번 7자리입니다.
+              {" "}
+              예: 2410101 (입학년도 2자리 + 반 2자리 + 번호 3자리)
+              <br />
+            </div>
+          )}
         </header>
 
         <form className="login-form" onSubmit={handleLogin}>
@@ -77,7 +94,7 @@ function Login() {
               type="text"
               value={studentId}
               onChange={(event) => setStudentId(event.target.value)}
-              placeholder="예: 20725"
+              placeholder="예: 2410101"
               autoComplete="username"
               required
               disabled={loading}

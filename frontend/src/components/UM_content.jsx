@@ -103,7 +103,7 @@ const Content = ({ ID }) => {
   return (
     <div className="UMcontent">
       <div className="UMcontent__body">
-        <h2>관리자 대여 현황</h2>
+        <h2>대여 현황</h2>
         <p className="UMcontent__caption">오늘 날짜: {dayArr.join(". ")}</p>
         {ID && (
           <p className="UMcontent__caption">관리자 ID: {ID}</p>
@@ -130,6 +130,8 @@ const Content = ({ ID }) => {
               const rentalItems = (rental.items || [])
                 .map((item, idx) => `${item} ${rental.count[idx]}개`)
                 .join(", ");
+              const statusTone = isPending ? "pending" : isOverdue ? "overdue" : "active";
+              const statusText = isPending ? "반납 승인 대기" : isOverdue ? "연체" : "정상 진행";
 
               return (
                 <div
@@ -138,20 +140,18 @@ const Content = ({ ID }) => {
                     isPending ? "highlight" : isOverdue ? "warn" : ""
                   }`}
                 >
+                  <div className="block__head">
+                    <div>
+                      <h4 className="block__title">{rental.name}</h4>
+                      <p className="block__subtitle">ID · {rental.id}</p>
+                    </div>
+                    <span className={`status-badge status-badge--${statusTone}`}>{statusText}</span>
+                  </div>
+
                   <div className="block__details">
-                    <div>
-                      <strong>대여자</strong>: {rental.name} (ID: {rental.id})
-                    </div>
-                    <div>
-                      <strong>대여 품목</strong>: {rentalItems}
-                    </div>
-                    <div>
-                      <strong>대여일</strong>: {rental.date?.join(". ")}
-                    </div>
-                    <div>
-                      <strong>반납 예정일</strong>:{" "}
-                      {rental.deadline?.join(". ")} ({dLabel})
-                    </div>
+                    <div><strong>대여 품목</strong>: {rentalItems}</div>
+                    <div><strong>대여일</strong>: {rental.date?.join(". ")}</div>
+                    <div><strong>반납 예정일</strong>: {rental.deadline?.join(". ")} ({dLabel})</div>
                   </div>
 
                   <button

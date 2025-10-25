@@ -123,19 +123,14 @@ function MyPage() {
         <section className="mypage-hero">
           <div className="mypage-hero__copy">
             <span className="mypage-hero__eyebrow">My Rental Record</span>
-            <h1>반납까지 책임 있게, 나의 대여 기록</h1>
-            <p>
-              대여 현황과 이력, 반납 일정까지 한 눈에 확인해 보세요.
-              필요하다면 바로 비밀번호를 변경하거나 홈으로 돌아갈 수
-              있습니다.
-            </p>
+            <h1>내 페이지</h1>
             <div className="mypage-hero__profile">
               <dl>
                 <dt>이름</dt>
                 <dd>{studentInfo?.student_name ?? "-"}</dd>
               </dl>
               <dl>
-                <dt>학번</dt>
+                <dt>ID</dt>
                 <dd>{studentInfo?.student_id ?? "-"}</dd>
               </dl>
               {latestRental && (
@@ -166,10 +161,6 @@ function MyPage() {
           <div className="mypage-card mypage-card--actions">
             <div className="mypage-card__body">
               <h2>계정 관리</h2>
-              <p>
-                계정 비밀번호를 안전하게 변경하거나, 관리자라면 전용 콘솔로
-                이동할 수 있습니다.
-              </p>
             </div>
             <div className="mypage-card__cta">
               <button
@@ -202,7 +193,6 @@ function MyPage() {
         <section className="mypage-history">
           <div className="mypage-history__head">
             <h2>나의 대여·반납 기록</h2>
-            <p>대여 신청부터 반납까지의 모든 진행 상황을 확인할 수 있습니다.</p>
           </div>
 
           {rentals.length === 0 ? (

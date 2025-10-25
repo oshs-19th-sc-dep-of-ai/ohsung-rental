@@ -38,7 +38,7 @@ const Header = () => {
         <header className="HeaderObj">
           <img className="photo" alt="학생회로고" src="schooljjang.png"></img>
           <h1 className="logo" onClick={handleLogoClick} style={{ cursor: "pointer" }}>
-            양심물품대여
+            빌리러 오성
           </h1>
           <nav>
             <ul className="nav-links">

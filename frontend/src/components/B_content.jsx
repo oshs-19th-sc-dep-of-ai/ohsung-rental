@@ -111,10 +111,6 @@ export default function BContent({ ID }) {
         <div className="borrow-hero__copy">
           <span className="borrow-hero__eyebrow">Borrow Center</span>
           <h1>물품 대여 센터</h1>
-          <p>
-            필요한 기자재를 빠르게 선택하고 대여를 완료하세요. 선택한
-            카테고리의 재고 현황이 실시간으로 반영됩니다.
-          </p>
           <div className="borrow-hero__stats">
             <div className="borrow-hero__stat">
               <span>대여 가능</span>
@@ -226,10 +222,10 @@ export default function BContent({ ID }) {
           <div className="borrow-note__halo" aria-hidden="true" />
           <h3>대여 전 꼭 확인하세요</h3>
           <ul>
-            <li>대여 기간은 안내된 규칙에 따라 준수해주세요.</li>
-            <li>사용 중 파손이나 문제 발생 시 즉시 담당자에게 알립니다.</li>
+            <li>대여 기간은 <strong>2일</strong> 입니다.</li>
+            <li>사용 중 파손이나 문제 발생 시 즉시 학생회에 연락하세요.</li>
             <li>
-              반납 신청은 사용 종료 후 2시간 이내에 진행해야 원활히 처리됩니다.
+              반납 신청은 지정된 장소에 반납 후 반납신청을 진행해주세요.
             </li>
           </ul>
         </div>

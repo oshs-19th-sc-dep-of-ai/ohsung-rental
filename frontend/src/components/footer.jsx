@@ -9,7 +9,7 @@ const Footer = () => {
             <span />
           </div>
           <div>
-            <p className="home-footer__title">양심물품 대여</p>
+            <p className="home-footer__title">빌리러 오성</p>
             <p className="home-footer__subtitle">천안오성고 AI융합부</p>
           </div>
         </div>

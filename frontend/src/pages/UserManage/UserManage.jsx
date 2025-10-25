@@ -1,6 +1,6 @@
 import "./UserManage.css";
 import React, { useEffect, useState } from "react";
-import Header from "../../components/UM_header";
+import Header from "../../components/header";
 import Content from "../../components/UM_content";
 import axios from "axios";
 
@@ -26,9 +26,11 @@ function UserManage() {
       });
   }, []);
 
+  const headerUser = adminID ? { id: adminID, name: "관리자", isAdmin: true } : null;
+
   return (
     <div className="UserManage">
-      <Header />
+      <Header user={headerUser} />
       <main className="UserManage__content">
         {adminID ? (
           <Content ID={adminID} />

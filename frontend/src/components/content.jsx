@@ -73,14 +73,14 @@ const Content = ({ id, user }) => {
         {
           title: "반납 신청하기",
           description:
-            "반납 예정일 2일 이내에 신청하면 더 빠르게 승인됩니다.",
+            "대여 후 2일 이내에 반납 신청을 하고 반납하세요.",
           to: "/Return",
           accent: "sky",
         },
         {
           title: "내 이용 기록 보기",
           description:
-            "대여 및 반납 이력을 확인하고 알림을 받아보세요.",
+            "대여 및 반납 이력을 확인하세요.",
           to: "/MyPage",
           accent: "violet",
         },
@@ -111,14 +111,12 @@ const Content = ({ id, user }) => {
           detail: "정해진 기간 동안 깨끗하게 사용하고 손상에 주의하세요.",
         },
         {
-          title: "부드러운 반납",
-          detail: "반납 신청 후 안내에 따라 지정 장소에 물품을 반환합니다.",
+          title: "반납",
+          detail: "반납 신청 후 안내에 따라 지정 장소에 물품을 반환하세요.",
         },
       ];
 
-  const guideHighlight = isAdmin
-    ? "정확한 기록과 빠른 대응이 학생들의 경험을 바꿉니다."
-    : "정해진 기간을 지키고, 다음 사용자를 위한 배려를 잊지 마세요.";
+
 
   const noteBody = isAdmin
     ? "학생들의 대여 문화를 지키는 핵심 관리자입니다. 대여 현황을 꼼꼼하게 살피고 문제가 생기면 즉시 대응해 주세요."
@@ -128,18 +126,15 @@ const Content = ({ id, user }) => {
     <div className="home-content">
       <section className="home-hero">
         <div className="home-hero__copy">
-          <span className="home-hero__eyebrow">
-            {isAdmin ? "관리자 모드" : "양심 물품 대여"}
-          </span>
           <h1>
             {isAdmin
               ? "스마트한 대여 관리, 더 신뢰받는 학생 문화"
-              : "필요한 순간에, 책임 있는 양심 물품 대여"}
+              : "필요한 순간에, 빌리러 오성"}
           </h1>
           <p>
             {isAdmin
-              ? "대여와 반납 흐름을 한눈에 파악하고 학생들의 이용 문화를 아름답게 가꿔 보세요."
-              : "몇 번의 터치로 대여를 신청하고 반납까지 매끄럽게 진행하세요. 언제나 신뢰를 쌓는 당신을 응원합니다."}
+              ? "대여와 반납 흐름을 한눈에 파악하세요."
+              : "필요할때 있는 당신의 물품 대여 서비스."}
           </p>
           <div className="home-hero__meta">
             <div className="home-hero__meta-card">
@@ -158,12 +153,7 @@ const Content = ({ id, user }) => {
 
       <section className="home-actions">
         <div className="home-actions__head">
-          <h2>{isAdmin ? "관리 바로가기" : "빠른 액션"}</h2>
-          <p>
-            {isAdmin
-              ? "자주 사용하는 기능을 빠르게 호출하고, 상황 대응 속도를 높이세요."
-              : "자주 쓰는 동작을 카드에서 바로 실행해보세요. 애니메이션이 액션 상태를 안내합니다."}
-          </p>
+          <h2>{isAdmin ? "관리 바로가기" : "바로가기"}</h2>
         </div>
         <div className="home-actions__grid">
           {actions.map((action, idx) => (
@@ -211,7 +201,6 @@ const Content = ({ id, user }) => {
       <section className="home-timeline">
         <div className="home-timeline__head">
           <h2>이용 가이드</h2>
-          <p>{guideHighlight}</p>
         </div>
         <ol className="home-timeline__list">
           {journeySteps.map((step, index) => (

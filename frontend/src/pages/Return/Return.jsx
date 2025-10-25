@@ -106,19 +106,8 @@ function Return() {
     [rentals],
   );
 
-  const headerUser = useMemo(() => {
-    if (student) {
-      return {
-        id: student.student_id,
-        name: student.student_name,
-        isAdmin: false,
-      };
-    }
-    if (ID) {
-      return { id: ID, name: "", isAdmin: false };
-    }
-    return null;
-  }, [student, ID]);
+  // Header determines role via check_session. Avoid passing partial user
+  // data that could misclassify admins as students.
 
   const heroStats = useMemo(
     () => [
@@ -184,6 +173,8 @@ function Return() {
       : "완료";
     const statusTone = isCompleted ? "completed" : isPending ? "pending" : "active";
 
+    const displayNo = item.display_no ?? item.product_id;
+
     return (
       <article
         key={item.rental_id}
@@ -192,7 +183,7 @@ function Return() {
         <div className="rental-card__header">
           <div>
             <h4 className="rental-card__title">{item.product_name}</h4>
-            <p className="rental-card__subtitle">물품 ID · {item.product_id}</p>
+            <p className="rental-card__subtitle">물품 ID · {displayNo}</p>
           </div>
           <span className={`status-badge status-badge--${statusTone}`}>
             {item.status}
@@ -208,12 +199,6 @@ function Return() {
             <div className="rental-card__meta-item">
               <dt>반납 예정</dt>
               <dd>{formatDateTime(item.expected_return_time)}</dd>
-            </div>
-          )}
-          {item.return_time && (
-            <div className="rental-card__meta-item">
-              <dt>반납 완료</dt>
-              <dd>{formatDateTime(item.return_time)}</dd>
             </div>
           )}
         </dl>
@@ -234,15 +219,15 @@ function Return() {
 
   return (
     <div className="return-page">
-      <Header user={headerUser} />
+      {/* Let Header resolve role via /check_session to avoid misclassification */}
+      <Header />
       <main className="return-main">
         <section className="return-hero">
           <div className="return-hero__copy">
             <span className="return-hero__eyebrow">양심 물품 반납</span>
-            <h1>대여 현황과 반납 진행 상태를 한눈에</h1>
+            <h1>대여 현황과 반납 진행 상태</h1>
             <p>
-              대여 중인 물품과 반납 신청 상황을 실시간으로 확인하세요. 지연 없이
-              책임감 있게 반납하도록 도와드릴게요.
+              대여 중인 물품과 반납 신청 현황, 완료된 기록입니다.
             </p>
           </div>
 
@@ -257,19 +242,13 @@ function Return() {
               </div>
             ))}
             <div className="return-hero__meta-card return-hero__meta-card--identity">
-              <span>사용자</span>
+              <span>이름</span>
               <strong>
                 {student
-                  ? `${student.student_name} · ${student.student_id}`
-                  : ID
-                  ? `로그인 ID · ${ID}`
+                  ? `${student.student_name}`
                   : "로그인 정보 없음"}
               </strong>
-              <p>
-                {student
-                  ? "학생 정보와 대여 기록을 기준으로 맞춤 안내를 제공합니다."
-                  : "로그인 후 학생 정보를 확인하면 더 정확한 안내를 받을 수 있습니다."}
-              </p>
+
             </div>
           </div>
         </section>
@@ -329,7 +308,7 @@ function Return() {
                   수 있습니다.
                 </li>
                 <li>
-                  반납 문의는 학생부 또는 담당 선생님께 연락하면 빠르게 처리됩니다.
+                  반납에 대한 문의가 있으면 <strong>학생회</strong>로 연락해 주세요.
                 </li>
               </ul>
             </div>

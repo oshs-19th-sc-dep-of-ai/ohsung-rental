@@ -28,17 +28,17 @@ const Header = ({ user }) => {
     axios
       .get("http://localhost:5000/check_session", { withCredentials: true })
       .then((response) => {
-        if (!active) {
-          return;
-        }
-        if (response?.data?.status === "success") {
-          const sid = response.data.student_id || response.data.admin_id;
-          const nm =
-            response.data.student_name ||
-            (response.data.admin_id ? "관리자" : "");
-          setRole(response.data.admin_id ? "admin" : "student");
+        if (!active) return;
+        const d = response?.data || {};
+        const hasIdentity =
+          Boolean(d.admin_id) || Boolean(d.student_id) || d.is_admin === true;
+        if (d.status === "success" || hasIdentity) {
+          const isAdmin = Boolean(d.admin_id) || d.is_admin === true;
+          const sid = d.student_id || d.admin_id || null;
+          const nm = d.student_name || (isAdmin ? "관리자" : "");
+          setRole(isAdmin ? "admin" : "student");
           setDisplayName(nm ?? "");
-          setResolvedId(sid ?? null);
+          setResolvedId(sid);
         } else {
           setRole(null);
           setDisplayName("");
@@ -46,11 +46,10 @@ const Header = ({ user }) => {
         }
       })
       .catch(() => {
-        if (active) {
-          setRole(null);
-          setDisplayName("");
-          setResolvedId(null);
-        }
+        if (!active) return;
+        setRole(null);
+        setDisplayName("");
+        setResolvedId(null);
       });
 
     return () => {
@@ -79,13 +78,13 @@ const Header = ({ user }) => {
       return [
         { label: "대여 관리", to: "/Borrow" },
         { label: "반납 현황", to: "/Return" },
-        { label: "사용자 관리", to: "/UserManage" },
+        { label: "내 페이지", to: "/MyPage" },
       ];
     }
     return [
       { label: "대여하기", to: "/Borrow" },
       { label: "반납하기", to: "/Return" },
-      { label: "내 기록", to: "/MyPage" },
+      { label: "내 페이지", to: "/MyPage" },
     ];
   }, [role]);
 
@@ -122,7 +121,7 @@ const Header = ({ user }) => {
               alt="천안오성고 로고"
             />
             <div className="home-header__brand-copy">
-              <span className="home-header__wordmark">양심물품 대여</span>
+              <span className="home-header__wordmark">빌리러 오성</span>
               <span className="home-header__tagline">
                 Ohsung Rental System
               </span>

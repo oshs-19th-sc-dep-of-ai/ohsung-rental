@@ -14,10 +14,13 @@ CREATE TABLE IF NOT EXISTS Products (
     product_id   INT AUTO_INCREMENT PRIMARY KEY, 
     product_name VARCHAR(64)        NOT NULL,
     category     VARCHAR(64)        NOT NULL,
+    display_no   INT                NOT NULL,
     quantity     INT                NOT NULL 
                                       DEFAULT 0,
     available    BOOLEAN            DEFAULT TRUE,  -- 
-    created_at   TIMESTAMP          DEFAULT CURRENT_TIMESTAMP
+    created_at   TIMESTAMP          DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_products_category_display_no
+      UNIQUE (category, display_no)
 );
 
 -- 대여 물품 테이블 (Rentals)

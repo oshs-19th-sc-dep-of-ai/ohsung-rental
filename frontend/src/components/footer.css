@@ -31,25 +31,17 @@
   gap: 18px;
 }
 
-.home-footer__mark {
+.home-footer__logo {
   width: 44px;
   height: 44px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.55), rgba(129, 140, 248, 0.42));
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 22px 44px -28px rgba(59, 130, 246, 0.7);
+  display: block;
+  object-fit: contain;
+  opacity: 0.40;
+  transition: opacity 0.2s ease;
 }
 
-.home-footer__mark span {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 3px solid rgba(15, 23, 42, 0.85);
-  border-left-color: transparent;
-  border-bottom-color: transparent;
-  transform: rotate(45deg);
+.home-footer__logo:hover {
+  opacity: 1;
 }
 
 .home-footer__title {

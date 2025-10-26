@@ -120,7 +120,7 @@ const Content = ({ id, user }) => {
 
   const noteBody = isAdmin
     ? "학생들의 대여 문화를 지키는 핵심 관리자입니다. 대여 현황을 꼼꼼하게 살피고 문제가 생기면 즉시 대응해 주세요."
-    : "대여일로부터 2일 이내 반납이 원칙입니다. 파손이나 분실이 발생하면 학생부를 통해 배상 절차가 진행될 수 있어요.";
+    : "대여일로부터 2일 이내 반납이 원칙입니다. 파손이나 분실이 발생하면 학생회를 통해 배상 절차가 진행될 수 있어요.";
 
   return (
     <div className="home-content">
@@ -128,7 +128,7 @@ const Content = ({ id, user }) => {
         <div className="home-hero__copy">
           <h1>
             {isAdmin
-              ? "스마트한 대여 관리, 더 신뢰받는 학생 문화"
+              ? "대여 관리 계정입니다"
               : "필요한 순간에, 빌리러 오성"}
           </h1>
           <p>
@@ -151,6 +151,7 @@ const Content = ({ id, user }) => {
         </div>
       </section>
 
+      {!isAdmin && (
       <section className="home-actions">
         <div className="home-actions__head">
           <h2>{isAdmin ? "관리 바로가기" : "바로가기"}</h2>
@@ -197,7 +198,9 @@ const Content = ({ id, user }) => {
           ))}
         </div>
       </section>
+      )}
 
+      {!isAdmin && (
       <section className="home-timeline">
         <div className="home-timeline__head">
           <h2>이용 가이드</h2>
@@ -217,7 +220,9 @@ const Content = ({ id, user }) => {
           ))}
         </ol>
       </section>
+      )}
 
+      {!isAdmin && (
       <section className="home-note">
         <div className="home-note__card">
           <div className="home-note__halo" aria-hidden="true" />
@@ -231,6 +236,7 @@ const Content = ({ id, user }) => {
           )}
         </div>
       </section>
+      )}
     </div>
   );
 };

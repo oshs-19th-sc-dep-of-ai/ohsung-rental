@@ -304,7 +304,7 @@ function Return() {
                   대여일로부터 <strong>2일 이내</strong>에 반납을 완료해 주세요.
                 </li>
                 <li>
-                  파손 또는 분실 시 <strong>학생부</strong>와 협의하여 배상이 필요할
+                  파손 또는 분실 시 <strong>학생회</strong>와 협의하여 배상이 필요할
                   수 있습니다.
                 </li>
                 <li>

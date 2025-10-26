@@ -1,16 +1,15 @@
 import "./footer.css";
+import underLogo from "../assets/ohsunggo_under.png";
 
 const Footer = () => {
   return (
     <footer className="home-footer">
       <div className="home-footer__inner">
         <div className="home-footer__brand">
-          <div className="home-footer__mark" aria-hidden="true">
-            <span />
-          </div>
+          <img src={underLogo} alt="오성고 로고" className="home-footer__logo" />
           <div>
             <p className="home-footer__title">빌리러 오성</p>
-            <p className="home-footer__subtitle">천안오성고 AI융합부</p>
+            <p className="home-footer__subtitle">천안오성고 학생회</p>
           </div>
         </div>
 
@@ -22,7 +21,6 @@ const Footer = () => {
           >
             학생회 인스타그램
           </a>
-          <a href="mailto:admin@ohsung.hs.kr">문의하기</a>
         </div>
 
         <p className="home-footer__copyright">

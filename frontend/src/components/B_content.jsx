@@ -40,31 +40,28 @@ export default function BContent({ ID }) {
     loadProducts(selectedItem);
   }, [selectedItem]);
 
-  const totals = useMemo(() => {
-    return categories.reduce(
-      (acc, curr) => {
-        const total = Number(curr.total) || 0;
-        const available = Number(curr.available) || 0;
-        return {
-          total: acc.total + total,
-          available: acc.available + available,
-        };
-      },
-      { total: 0, available: 0 },
-    );
-  }, [categories]);
-
-  const selectedCategoryMeta = useMemo(
-    () => categories.find((item) => item.category === selectedItem),
-    [categories, selectedItem],
-  );
-
   const selectedUnit = useMemo(
     () =>
       units.find(
         (unit) => unit.display_no === selectedNo && unit.is_available === 1,
       ),
     [units, selectedNo],
+  );
+
+  const categorySummary = useMemo(() => {
+    return categories.reduce(
+      (acc, item) => {
+        acc.total += Number(item.total) || 0;
+        acc.available += Number(item.available) || 0;
+        return acc;
+      },
+      { total: 0, available: 0 },
+    );
+  }, [categories]);
+
+  const selectedCategory = useMemo(
+    () => categories.find((item) => item.category === selectedItem) ?? null,
+    [categories, selectedItem],
   );
 
   const handleBorrow = async () => {
@@ -109,44 +106,39 @@ export default function BContent({ ID }) {
     <div className="borrow-shell">
       <section className="borrow-hero">
         <div className="borrow-hero__copy">
-          <span className="borrow-hero__eyebrow">Borrow Center</span>
-          <h1>물품 대여 센터</h1>
-          <div className="borrow-hero__stats">
-            <div className="borrow-hero__stat">
-              <span>대여 가능</span>
-              <strong>{totals.available}</strong>
-            </div>
-            <div className="borrow-hero__stat">
-              <span>전체 재고</span>
-              <strong>{totals.total}</strong>
-            </div>
-            {selectedCategoryMeta && (
-              <div className="borrow-hero__stat borrow-hero__stat--accent">
-                <span>{selectedCategoryMeta.category}</span>
-                <strong>
-                  {selectedCategoryMeta.available}/{selectedCategoryMeta.total}
-                </strong>
-              </div>
-            )}
+          <span className="borrow-hero__eyebrow">대여하기</span>
+          <h1>물품 대여</h1>
+          <p>원하는 물품을 선택하고 대여 신청을 해보세요.</p>
+        </div>
+
+        <div className="borrow-hero__meta">
+          <div className="borrow-panel borrow-panel--guide">
+            <h3>주의사항</h3>
+            <ul className="borrow-guide__list">
+              <li>대여 기간은 <strong>2일</strong> 입니다.</li>
+              <li>사용 중 파손이나 문제 발생 시 즉시 학생회에 연락하세요.</li>
+              <li>
+                반납 신청은 지정된 장소에 반납 후 반납신청을 진행해주세요.
+              </li>
+            </ul>
           </div>
         </div>
       </section>
 
-      <section className="borrow-panel">
-        <div className="borrow-card">
-          <header className="borrow-card__head">
-            <div>
-              <h2>카테고리 선택</h2>
-              <p>카테고리를 선택하면 이용 가능한 번호가 아래에 표시됩니다.</p>
-            </div>
-            <span className="borrow-card__badge">
-              {selectedCategoryMeta
-                ? `${selectedCategoryMeta.available} Available`
-                : "대기 중"}
+      <section className="borrow-panels">
+        <div className="borrow-panel">
+          <div className="borrow-panel__head">
+            <h2>물품 선택</h2>
+            <span className="borrow-panel__meta">
+              {selectedCategory
+                ? `${selectedCategory.available}/${selectedCategory.total}`
+                : hasCategories
+                ? `${categorySummary.available}/${categorySummary.total}`
+                : "0/0"}
             </span>
-          </header>
+          </div>
 
-          <div className="borrow-card__body">
+          <div className="borrow-panel__body">
             {hasCategories ? (
               <div className="borrow-chip-group" role="tablist">
                 {categories.map(({ category, total, available }) => {
@@ -197,7 +189,7 @@ export default function BContent({ ID }) {
             </div>
           </div>
 
-          <footer className="borrow-card__footer">
+          <footer className="borrow-panel__footer">
             <div className="borrow-selected">
               <span>선택한 번호</span>
               <strong>{selectedNo ?? "--"}</strong>
@@ -214,20 +206,6 @@ export default function BContent({ ID }) {
               {busy ? "처리 중..." : "대여 신청"}
             </button>
           </footer>
-        </div>
-      </section>
-
-      <section className="borrow-note">
-        <div className="borrow-note__card">
-          <div className="borrow-note__halo" aria-hidden="true" />
-          <h3>대여 전 꼭 확인하세요</h3>
-          <ul>
-            <li>대여 기간은 <strong>2일</strong> 입니다.</li>
-            <li>사용 중 파손이나 문제 발생 시 즉시 학생회에 연락하세요.</li>
-            <li>
-              반납 신청은 지정된 장소에 반납 후 반납신청을 진행해주세요.
-            </li>
-          </ul>
         </div>
       </section>
     </div>

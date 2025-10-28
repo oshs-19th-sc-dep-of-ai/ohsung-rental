@@ -263,28 +263,6 @@
   transform: rotate(-45deg);
 }
 
-.home-header__panel-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 18px;
-  border-radius: 16px;
-  background: linear-gradient(120deg, rgba(67, 56, 202, 0.48), rgba(30, 64, 175, 0.42));
-  color: #ede9fe;
-  font-weight: 600;
-  font-size: 0.95rem;
-  text-decoration: none;
-  border: 1px solid rgba(129, 140, 248, 0.38);
-  box-shadow: 0 22px 38px -26px rgba(79, 70, 229, 0.65);
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
-}
-
-.home-header__panel-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 26px 42px -24px rgba(79, 70, 229, 0.75);
-}
-
 .home-header__panel-nav {
   display: flex;
   flex-direction: column;

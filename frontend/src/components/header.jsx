@@ -76,8 +76,8 @@ const Header = ({ user }) => {
   const navLinks = useMemo(() => {
     if (role === "admin") {
       return [
-        { label: "대여 관리", to: "/Borrow" },
-        { label: "반납 현황", to: "/Return" },
+        { label: "대여하기", to: "/Borrow" },
+        { label: "반납하기", to: "/Return" },
         { label: "내 페이지", to: "/MyPage" },
       ];
     }
@@ -216,24 +216,6 @@ const Header = ({ user }) => {
                   <span />
                 </button>
               </div>
-
-              <Link
-                to={identityTarget}
-                state={linkState}
-                className="home-header__panel-cta"
-                onClick={closePanel}
-              >
-                <span>{identityLabel}</span>
-                <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-                  <path
-                    d="M6 4l4 4-4 4"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Link>
 
               <nav className="home-header__panel-nav">
                 {navLinks.map((item) => (

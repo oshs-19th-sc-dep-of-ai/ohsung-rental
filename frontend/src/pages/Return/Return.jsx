@@ -224,10 +224,10 @@ function Return() {
       <main className="return-main">
         <section className="return-hero">
           <div className="return-hero__copy">
-            <span className="return-hero__eyebrow">양심 물품 반납</span>
+            <span className="return-hero__eyebrow">반납하기</span>
             <h1>대여 현황과 반납 진행 상태</h1>
             <p>
-              대여 중인 물품과 반납 신청 현황, 완료된 기록입니다.
+              대여 중인 물품과 반납 신청 현황을 확인하세요.
             </p>
           </div>
 
@@ -276,29 +276,13 @@ function Return() {
               )}
               {pendingRentals.length > 0 && (
                 <p className="return-hint">
-                  반납 신청된 물품은 담당 선생님이 순차적으로 확인합니다.
+                  반납 신청된 물품은 학생회가 순차적으로 확인합니다.
                 </p>
               )}
             </div>
 
-            <div className="return-panel return-panel--secondary">
-              <div className="return-panel__head">
-                <h2>반납 완료 기록</h2>
-                <span className="return-chip return-chip--muted">
-                  {completedRentals.length}건
-                </span>
-              </div>
-              {completedRentals.length === 0 ? (
-                <p className="return-empty">아직 반납 완료된 기록이 없습니다.</p>
-              ) : (
-                <div className="return-grid return-grid--compact">
-                  {completedRentals.map((item) => renderRentalCard(item, false))}
-                </div>
-              )}
-            </div>
-
             <div className="return-panel return-panel--guide">
-              <h3>반납 안내</h3>
+              <h3>주의사항</h3>
               <ul className="return-guide__list">
                 <li>
                   대여일로부터 <strong>2일 이내</strong>에 반납을 완료해 주세요.

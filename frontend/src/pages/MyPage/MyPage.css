@@ -3,10 +3,9 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(circle at 16% -14%, rgba(129, 140, 248, 0.24), transparent 44%),
-    radial-gradient(circle at 82% 8%, rgba(56, 189, 248, 0.26), transparent 52%),
-    linear-gradient(180deg, #020617 0%, #0b1321 42%, #111827 100%);
+  background: radial-gradient(circle at 20% -10%, rgba(99, 102, 241, 0.28), transparent 45%),
+    radial-gradient(circle at 78% 0%, rgba(56, 189, 248, 0.25), transparent 55%),
+    linear-gradient(180deg, #020617 0%, #0f172a 38%, #111827 100%);
   color: #e2e8f0;
   overflow-x: hidden;
 }
@@ -40,182 +39,180 @@
 .mypage-main {
   position: relative;
   flex: 1;
-  width: min(1120px, calc(100% - 48px));
+  width: min(1180px, calc(100% - 48px));
   margin: 0 auto;
-  padding: clamp(28px, 6vw, 54px) 0 clamp(88px, 12vw, 136px);
+  padding: clamp(32px, 6vw, 54px) 0 clamp(88px, 10vw, 128px);
   display: flex;
   flex-direction: column;
-  gap: clamp(32px, 6vw, 56px);
-  z-index: 0;
+  gap: clamp(36px, 7vw, 76px);
 }
 
 .mypage-hero {
-  position: relative;
   display: grid;
-  gap: clamp(24px, 5vw, 36px);
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  padding: clamp(32px, 7vw, 60px);
-  border-radius: clamp(26px, 5vw, 34px);
-  background: linear-gradient(140deg, rgba(11, 21, 38, 0.92), rgba(22, 33, 52, 0.82));
-  box-shadow: 0 36px 86px -44px rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(18px);
-  overflow: hidden;
-}
-
-.mypage-hero::after {
-  content: "";
-  position: absolute;
-  inset: 16% -18% auto auto;
-  width: clamp(190px, 32vw, 320px);
-  height: clamp(190px, 32vw, 320px);
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.28) 0%, transparent 72%);
-  opacity: 0.74;
-  pointer-events: none;
+  gap: clamp(32px, 6vw, 64px);
+  align-items: center;
 }
 
 .mypage-hero__copy {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: clamp(16px, 3vw, 24px);
-  color: #f8fafc;
+  gap: 18px;
 }
 
 .mypage-hero__eyebrow {
-  font-size: clamp(0.78rem, 1.8vw, 0.96rem);
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(94, 234, 212, 0.84);
+  color: #38bdf8;
+  background: rgba(59, 130, 246, 0.24);
+  border-radius: 999px;
+  padding: 6px 17px;
+  border: 1px solid rgba(59, 130, 246, 0.34);
 }
 
 .mypage-hero h1 {
   margin: 0;
-  font-size: clamp(2.05rem, 5.2vw, 3.1rem);
-  line-height: 1.16;
+  font-size: clamp(2rem, 4.4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.12;
+  color: #f8fafc;
+  text-shadow: 0 18px 38px rgba(15, 23, 42, 0.72);
 }
 
 .mypage-hero p {
   margin: 0;
-  color: rgba(226, 232, 240, 0.88);
-  font-size: clamp(0.98rem, 2.6vw, 1.1rem);
+  font-size: clamp(1rem, 2.4vw, 1.12rem);
   line-height: 1.7;
+  color: rgba(226, 232, 240, 0.82);
 }
 
-.mypage-hero__profile {
+.mypage-hero__meta {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
-  margin-top: clamp(12px, 2vw, 18px);
-  padding: 16px;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.mypage-hero__meta-card {
+  position: relative;
+  padding: 18px 20px;
   border-radius: 20px;
-  background: rgba(15, 23, 42, 0.55);
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  box-shadow: inset 0 0 0 1px rgba(71, 85, 105, 0.16);
+  background: rgba(15, 23, 42, 0.76);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  box-shadow: 0 28px 48px -28px rgba(8, 47, 73, 0.68);
+  overflow: hidden;
 }
 
-.mypage-hero__profile dl {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.mypage-hero__meta-card::after {
+  content: "";
+  position: absolute;
+  inset: -40% 45% 20% -20%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.28), transparent 72%);
+  opacity: 0.6;
 }
 
-.mypage-hero__profile dt {
-  font-size: 0.8rem;
-  letter-spacing: 0.06em;
+.mypage-hero__meta-card span {
+  position: relative;
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: rgba(148, 163, 184, 0.78);
 }
 
-.mypage-hero__profile dd {
-  margin: 0;
-  font-size: clamp(1.05rem, 2.8vw, 1.3rem);
+.mypage-hero__meta-card strong {
+  position: relative;
+  display: block;
+  margin-top: 10px;
+  font-size: 1.4rem;
   font-weight: 700;
-  color: #f1f5f9;
-}
-
-.mypage-hero__stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: clamp(14px, 3vw, 24px);
-}
-
-.mypage-stat {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 6px;
-  padding: clamp(18px, 3.6vw, 26px);
-  border-radius: 22px;
-  background: rgba(15, 23, 42, 0.62);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow:
-    0 24px 52px -32px rgba(15, 23, 42, 0.85),
-    inset 0 0 0 1px rgba(71, 85, 105, 0.18);
-}
-
-.mypage-stat span {
-  font-size: 0.82rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgba(203, 213, 225, 0.82);
-}
-
-.mypage-stat strong {
-  font-size: clamp(1.8rem, 4vw, 2.2rem);
   color: #f8fafc;
-  font-weight: 700;
 }
 
-.mypage-stat--emerald {
-  background: linear-gradient(140deg, rgba(94, 234, 212, 0.2), rgba(15, 23, 42, 0.55));
-  border-color: rgba(94, 234, 212, 0.42);
+.mypage-hero__meta-card p {
+  position: relative;
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: rgba(226, 232, 240, 0.7);
 }
 
-.mypage-stat--sky {
-  background: linear-gradient(140deg, rgba(56, 189, 248, 0.22), rgba(15, 23, 42, 0.52));
-  border-color: rgba(56, 189, 248, 0.4);
+.mypage-hero__meta-card--emerald {
+  background: linear-gradient(140deg, rgba(16, 185, 129, 0.22), rgba(15, 23, 42, 0.85));
 }
 
-.mypage-stat--violet {
-  background: linear-gradient(140deg, rgba(129, 140, 248, 0.24), rgba(15, 23, 42, 0.54));
-  border-color: rgba(129, 140, 248, 0.44);
+.mypage-hero__meta-card--emerald::after {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.42), transparent 74%);
 }
 
-.mypage-actions {
+.mypage-hero__meta-card--amber {
+  background: linear-gradient(140deg, rgba(250, 204, 21, 0.24), rgba(15, 23, 42, 0.85));
+}
+
+.mypage-hero__meta-card--amber::after {
+  background: radial-gradient(circle, rgba(250, 204, 21, 0.45), transparent 72%);
+}
+
+.mypage-hero__meta-card--violet {
+  background: linear-gradient(140deg, rgba(129, 140, 248, 0.26), rgba(15, 23, 42, 0.85));
+}
+
+.mypage-hero__meta-card--violet::after {
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.45), transparent 70%);
+}
+
+.mypage-hero__meta-card--identity {
+  padding: 20px 22px;
+  grid-column: span 2;
+}
+
+.mypage-panels {
   display: flex;
   flex-direction: column;
+  gap: clamp(28px, 6vw, 48px);
 }
 
-.mypage-card {
+.mypage-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: clamp(18px, 3.6vw, 28px);
+  gap: 20px;
   padding: clamp(26px, 5vw, 40px);
-  border-radius: clamp(24px, 5vw, 32px);
-  background: linear-gradient(150deg, rgba(22, 31, 49, 0.84), rgba(15, 23, 42, 0.75));
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  box-shadow:
-    0 28px 60px -36px rgba(15, 23, 42, 0.9),
-    inset 0 0 0 1px rgba(100, 116, 139, 0.16);
-  backdrop-filter: blur(20px);
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(17, 24, 39, 0.84));
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 36px 60px -32px rgba(8, 47, 73, 0.7);
 }
 
-.mypage-card__body h2 {
-  margin: 0 0 12px;
-  font-size: clamp(1.6rem, 3.4vw, 2rem);
+.mypage-panel--secondary {
+  background: linear-gradient(145deg, rgba(30, 64, 175, 0.28), rgba(15, 23, 42, 0.9));
+}
+
+.mypage-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.mypage-panel__head h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
   color: #f8fafc;
 }
 
-.mypage-card__body p {
+.mypage-panel__head p {
   margin: 0;
-  color: rgba(226, 232, 240, 0.82);
-  font-size: clamp(0.96rem, 2.4vw, 1.08rem);
-  line-height: 1.64;
+  font-size: 0.95rem;
+  color: rgba(226, 232, 240, 0.72);
 }
 
-.mypage-card__cta {
+.mypage-actions__buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -290,13 +287,11 @@
 
 .mypage-history__table {
   overflow-x: auto;
-  border-radius: clamp(20px, 4vw, 28px);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(14px);
-  box-shadow:
-    0 24px 52px -38px rgba(15, 23, 42, 0.85),
-    inset 0 0 0 1px rgba(71, 85, 105, 0.16);
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  backdrop-filter: none;
+  box-shadow: none;
 }
 
 .mypage-history__table table {
@@ -311,7 +306,7 @@
 .mypage-history__table td {
   padding: clamp(14px, 3vw, 20px);
   text-align: left;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
 }
 
 .mypage-history__table th {
@@ -324,6 +319,14 @@
 .mypage-history__table tbody tr:last-child th,
 .mypage-history__table tbody tr:last-child td {
   border-bottom: none;
+}
+
+.mypage-history__table tbody tr {
+  background: rgba(15, 23, 42, 0.38);
+}
+
+.mypage-history__table tbody tr:nth-child(even) {
+  background: rgba(15, 23, 42, 0.28);
 }
 
 .mypage-badge {
@@ -359,17 +362,36 @@
 @media (max-width: 960px) {
   .mypage-main {
     width: calc(100% - 36px);
-    gap: clamp(28px, 7vw, 46px);
+  }
+
+  .mypage-hero__meta-card--identity {
+    grid-column: span 1;
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 760px) {
   .mypage-main {
     width: calc(100% - 28px);
-    padding: clamp(24px, 10vw, 40px) 0 clamp(76px, 16vw, 110px);
+    padding: clamp(24px, 10vw, 36px) 0 clamp(68px, 14vw, 108px);
   }
 
-  .mypage-card__cta {
+  .mypage-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .mypage-hero__meta-card {
+    padding: 18px;
+  }
+
+  .mypage-panels {
+    gap: clamp(22px, 7vw, 36px);
+  }
+
+  .mypage-panel {
+    padding: 24px 22px 30px;
+  }
+
+  .mypage-actions__buttons {
     flex-direction: column;
     align-items: stretch;
   }
@@ -380,6 +402,21 @@
 
   .mypage-history__table table {
     min-width: 520px;
+  }
+}
+
+@media (max-width: 540px) {
+  .mypage-main {
+    width: calc(100% - 22px);
+  }
+
+  .mypage-hero__eyebrow {
+    font-size: 0.68rem;
+    padding: 5px 14px;
+  }
+
+  .mypage-hero h1 {
+    font-size: 1.7rem;
   }
 }
 

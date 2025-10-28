@@ -1,16 +1,87 @@
 import "./content.css";
-import { Link, useLocation } from "react-router-dom";
-import { useEffect, useMemo } from "react";
+import { useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 
-const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
+const fullDateFormatter = new Intl.DateTimeFormat("ko-KR", {
   year: "numeric",
   month: "long",
   day: "numeric",
-  weekday: "short",
 });
+
+const toDate = (value) => {
+  if (!value) {
+    return null;
+  }
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const formatFullDate = (value) => {
+  const parsed = toDate(value);
+  return parsed ? fullDateFormatter.format(parsed) : "-";
+};
+
+const derivePlannedReturnDate = (expected, rentalTime) => {
+  const expectedDate = toDate(expected);
+  if (expectedDate) {
+    return expectedDate;
+  }
+  const rentalDate = toDate(rentalTime);
+  if (!rentalDate) {
+    return null;
+  }
+  const dueDate = new Date(rentalDate);
+  dueDate.setDate(dueDate.getDate() + 2);
+  return dueDate;
+};
+
+const formatCountdown = (targetDate) => {
+  if (!targetDate) {
+    return "정보 없음";
+  }
+  const now = new Date();
+  let diff = targetDate.getTime() - now.getTime();
+  if (diff > 0) {
+    const dayMs = 1000 * 60 * 60 * 24;
+    const hourMs = 1000 * 60 * 60;
+    const minuteMs = 1000 * 60;
+
+    const days = Math.floor(diff / dayMs);
+    diff -= days * dayMs;
+    const hours = Math.floor(diff / hourMs);
+    diff -= hours * hourMs;
+    const minutes = Math.floor(diff / minuteMs);
+
+    if (days > 0) {
+      return `${days}일 ${hours}시간 ${minutes}분 남음`;
+    }
+    if (hours > 0) {
+      return `${hours}시간 ${minutes}분 남음`;
+    }
+    return `${minutes}분 남음`;
+  }
+  if (Math.abs(diff) < 1000 * 60) {
+    return "지금까지";
+  }
+  return "기한 초과";
+};
+
+const getStatusTone = (statusCode) => {
+  if (statusCode === 0) {
+    return "active";
+  }
+  if (statusCode === 1) {
+    return "pending";
+  }
+  return "default";
+};
 
 const Content = ({ id, user }) => {
   const location = useLocation();
+  const [rentals, setRentals] = useState([]);
+  const [rentalsLoading, setRentalsLoading] = useState(false);
+  const [rentalsError, setRentalsError] = useState(null);
 
   const locationId = location.state?.id;
   const locationUpperId = location.state?.ID;
@@ -37,54 +108,58 @@ const Content = ({ id, user }) => {
   );
 
   const isAdmin = user?.isAdmin || resolvedId === "caoshsadmin";
-  const todayText = dateFormatter.format(new Date());
+  const todayText = formatFullDate(new Date());
+  const userName = user?.name || (isAdmin ? "관리자" : null);
 
-  const actions = isAdmin
-    ? [
-        {
-          title: "대여 현황 관리",
-          description:
-            "실시간 대여 로그를 확인하고 필요 시 대여 상태를 조정하세요.",
-          to: "/Borrow",
-          accent: "emerald",
-        },
-        {
-          title: "반납 상황 모니터링",
-          description:
-            "반납 신청 현황을 한눈에 보고 지연 건을 빠르게 처리합니다.",
-          to: "/Return",
-          accent: "sky",
-        },
-        {
-          title: "사용자 관리 콘솔",
-          description: "학생 계정을 검토하고 필요한 조치를 즉시 수행하세요.",
-          to: "/UserManage",
-          accent: "violet",
-        },
-      ]
-    : [
-        {
-          title: "양심 물품 대여하기",
-          description:
-            "필요한 물품을 선택하고 대여 규칙을 확인한 뒤 바로 대여하세요.",
-          to: "/Borrow",
-          accent: "emerald",
-        },
-        {
-          title: "반납 신청하기",
-          description:
-            "대여 후 2일 이내에 반납 신청을 하고 반납하세요.",
-          to: "/Return",
-          accent: "sky",
-        },
-        {
-          title: "내 이용 기록 보기",
-          description:
-            "대여 및 반납 이력을 확인하세요.",
-          to: "/MyPage",
-          accent: "violet",
-        },
-      ];
+  useEffect(() => {
+    if (isAdmin || !resolvedId) {
+      setRentals([]);
+      setRentalsLoading(false);
+      setRentalsError(null);
+      return;
+    }
+
+    let active = true;
+    setRentalsLoading(true);
+    setRentalsError(null);
+
+    axios
+      .get("http://localhost:5000/profile", { withCredentials: true })
+      .then((response) => {
+        if (!active) {
+          return;
+        }
+        const fetched = response.data?.rentals;
+        setRentals(Array.isArray(fetched) ? fetched : []);
+      })
+      .catch((error) => {
+        if (!active) {
+          return;
+        }
+        console.error("대여 정보를 불러오는 중 오류 발생", error);
+        setRentalsError("대여 정보를 불러오지 못했습니다.");
+        setRentals([]);
+      })
+      .finally(() => {
+        if (active) {
+          setRentalsLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isAdmin, resolvedId]);
+
+  const activeRentals = useMemo(
+    () => rentals.filter((item) => item.status_code !== 2),
+    [rentals],
+  );
+
+  const completedRentals = useMemo(
+    () => rentals.filter((item) => item.status_code === 2),
+    [rentals],
+  );
 
   const journeySteps = isAdmin
     ? [
@@ -129,7 +204,7 @@ const Content = ({ id, user }) => {
           <h1>
             {isAdmin
               ? "대여 관리 계정입니다"
-              : "필요한 순간에, 빌리러 오성"}
+              : "필요한 순간, 작은 도움을 건네는 곳"}
           </h1>
           <p>
             {isAdmin
@@ -141,10 +216,10 @@ const Content = ({ id, user }) => {
               <span>오늘</span>
               <strong>{todayText}</strong>
             </div>
-            {resolvedId && (
+            {userName && (
               <div className="home-hero__meta-card">
-                <span>사용자 ID</span>
-                <strong>{resolvedId}</strong>
+                <span>이름</span>
+                <strong>{userName}</strong>
               </div>
             )}
           </div>
@@ -152,52 +227,113 @@ const Content = ({ id, user }) => {
       </section>
 
       {!isAdmin && (
-      <section className="home-actions">
-        <div className="home-actions__head">
-          <h2>{isAdmin ? "관리 바로가기" : "바로가기"}</h2>
-        </div>
-        <div className="home-actions__grid">
-          {actions.map((action, idx) => (
-            <Link
-              key={action.to}
-              to={action.to}
-              state={resolvedId ? { ID: resolvedId } : undefined}
-              className={`home-action-card home-action-card--${action.accent}`}
-            >
-              <div className="home-action-card__index" aria-hidden="true">
-                {idx + 1}
-              </div>
-              <div className="home-action-card__body">
-                <h3>{action.title}</h3>
-                <p>{action.description}</p>
-              </div>
-              <span className="home-action-card__cta">
-                바로가기
-                <svg
-                  aria-hidden="true"
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                >
-                  <path
-                    d="M2 6h6"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="m5.5 3 3 3-3 3"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
+        <section className="home-rentals">
+          <div className="home-rentals__head">
+            <h2>나의 대여 현황</h2>
+            <p>현재 대여 중인 물품과 반납 일정을 확인하세요.</p>
+          </div>
+          {rentalsLoading ? (
+            <div className="home-rentals__placeholder">대여 정보를 불러오는 중...</div>
+          ) : rentalsError ? (
+            <div className="home-rentals__placeholder" role="alert">
+              {rentalsError}
+            </div>
+          ) : activeRentals.length === 0 ? (
+            <div className="home-rentals__placeholder">
+              현재 대여 중인 물품이 없어요.
+            </div>
+          ) : (
+            <ul className="home-rentals__list">
+              {activeRentals.map((item) => {
+                const plannedReturn = derivePlannedReturnDate(
+                  item.expected_return_time,
+                  item.rental_time,
+                );
+                const dueText = plannedReturn
+                  ? formatFullDate(plannedReturn)
+                  : "반납 예정일 정보 없음";
+                const countdown = plannedReturn
+                  ? formatCountdown(plannedReturn)
+                  : "정보 없음";
+                const tone = getStatusTone(item.status_code);
+
+                return (
+                  <li key={item.rental_id} className="home-rentals__item">
+                    <div className="home-rentals__item-head">
+                      <h3>{item.product_name}</h3>
+                      <span className={`home-rentals__status home-rentals__status--${tone}`}>
+                        {item.status ?? "상태 정보 없음"}
+                      </span>
+                    </div>
+                    <dl className="home-rentals__meta">
+                      <div>
+                        <dt>대여일</dt>
+                        <dd>{formatFullDate(item.rental_time)}</dd>
+                      </div>
+                      <div>
+                        <dt>반납 예정</dt>
+                        <dd>{dueText}</dd>
+                      </div>
+                      <div>
+                        <dt>남은 시간</dt>
+                        <dd>{countdown}</dd>
+                      </div>
+                    </dl>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      )}
+
+      {!isAdmin && !rentalsLoading && !rentalsError && (
+        <section className="home-history">
+          <div className="home-history__head">
+            <h2>반납 완료 기록</h2>
+            <p>최근에 반납을 마친 물품을 확인할 수 있어요.</p>
+          </div>
+          {completedRentals.length === 0 ? (
+            <div className="home-history__placeholder">
+              아직 반납 완료된 기록이 없어요.
+            </div>
+          ) : (
+            <ul className="home-history__list">
+              {completedRentals.map((item) => {
+                const displayNo = item.display_no ?? item.product_id;
+                const rentalDateText = formatFullDate(item.rental_time);
+                const returnDateText = item.return_time
+                  ? formatFullDate(item.return_time)
+                  : null;
+
+                return (
+                  <li key={item.rental_id} className="home-history__item">
+                    <div className="home-history__item-head">
+                      <h3>{item.product_name}</h3>
+                      <span className="home-history__badge">반납 완료</span>
+                    </div>
+                    <dl className="home-history__meta">
+                      <div>
+                        <dt>물품 ID</dt>
+                        <dd>{displayNo ?? "-"}</dd>
+                      </div>
+                      <div>
+                        <dt>대여일</dt>
+                        <dd>{rentalDateText}</dd>
+                      </div>
+                      {returnDateText && (
+                        <div>
+                          <dt>반납일</dt>
+                          <dd>{returnDateText}</dd>
+                        </div>
+                      )}
+                    </dl>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       )}
 
       {!isAdmin && (
@@ -206,10 +342,10 @@ const Content = ({ id, user }) => {
           <h2>이용 가이드</h2>
         </div>
         <ol className="home-timeline__list">
-          {journeySteps.map((step, index) => (
+          {journeySteps.map((step) => (
             <li key={step.title} className="home-timeline__item">
               <div className="home-timeline__node" aria-hidden="true">
-                <span>{index + 1}</span>
+                <span>•</span>
                 <div className="home-timeline__spark" />
               </div>
               <div className="home-timeline__content">

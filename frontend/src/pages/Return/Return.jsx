@@ -258,7 +258,7 @@ function Return() {
 
         {isOverdue && (
           <p className="return-card__note">
-            온라인 반납 신청이 제한되었습니다.
+            반납 신청이 제한되었습니다.
           </p>
         )}
       </article>

@@ -117,7 +117,7 @@ const Header = ({ user }) => {
           >
             <img
               className="home-header__logo"
-              src="schooljjang.png"
+              src="caoscouncil.png"
               alt="천안오성고 로고"
             />
             <div className="home-header__brand-copy">

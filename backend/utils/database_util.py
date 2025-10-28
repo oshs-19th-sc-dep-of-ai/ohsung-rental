@@ -107,3 +107,36 @@ class DatabaseManager(metaclass=__DatabaseManager):
             finally:
                 self.db_conn = None
                 self.cursor = None
+
+    def fetch_all(self, sql: str, **kwargs) -> List[Dict[str, Any]]:
+        """
+        SELECT 결과를 딕셔너리 리스트로 반환.
+        기본 커서가 튜플을 반환하므로, cursor.description으로 컬럼명을 읽어 dict로 매핑.
+        """
+        params = kwargs or {}
+        self._ensure_conn()
+        try:
+            with self.db_conn.cursor() as cur:
+                cur.execute(sql, params)
+                rows = cur.fetchall()
+                cols = [d[0] for d in (cur.description or [])]
+        except (pymysql.err.InterfaceError, pymysql.err.OperationalError):
+            self._reconnect()
+            with self.db_conn.cursor() as cur:
+                cur.execute(sql, params)
+                rows = cur.fetchall()
+                cols = [d[0] for d in (cur.description or [])]
+
+        if not rows:
+            return []
+        # 이미 dict를 주는 커서가 아니라면(기본 튜플), dict로 변환
+        if not isinstance(rows[0], dict):
+            return [dict(zip(cols, r)) for r in rows]
+        return rows  # 혹시 DictCursor로 바뀌어도 호환
+
+    def fetch_one(self, sql: str, **kwargs) -> Optional[Dict[str, Any]]:
+        """
+        SELECT 한 건을 딕셔너리로 반환. 없으면 None.
+        """
+        rows = self.fetch_all(sql, **kwargs)
+        return rows[0] if rows else None

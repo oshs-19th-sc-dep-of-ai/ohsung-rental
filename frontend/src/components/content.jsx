@@ -271,10 +271,6 @@ const Content = ({ id, user }) => {
                         <dd>{formatFullDate(item.rental_time)}</dd>
                       </div>
                       <div>
-                        <dt>반납 예정</dt>
-                        <dd>{dueText}</dd>
-                      </div>
-                      <div>
                         <dt>남은 시간</dt>
                         <dd>{countdown}</dd>
                       </div>

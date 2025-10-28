@@ -54,12 +54,15 @@ def rent_product(product_id):
             "message": "로그인이 필요합니다."
         }), 401
 
-    # 2) 이미 대여 중/반납대기인지 확인
+    # 대여 중, 반납대기, 연체 확인
     inuse = db.query(
         "SELECT 1 FROM Rentals "
-        "WHERE product_id=%(pid)s AND rental_status IN (0,1) "
+        "WHERE product_id=%(pid)s AND rental_status IN (%(rented)s, %(pending)s, %(overdue)s) "
         "LIMIT 1",
-        pid=product_id
+        pid=product_id,
+        rented=RENTAL_STATUS_RENTED,
+        pending=RENTAL_STATUS_PENDING_RETURN,
+        overdue=RENTAL_STATUS_OVERDUE,
     ).result
     if inuse:
         return jsonify({
@@ -118,12 +121,15 @@ def rental_request():
             "message": "제품 ID가 필요합니다."
         }), 400
 
-    # 2) 이미 대여 중/반납대기인지 확인
+    # 대여 중, 반납대기, 연체 확인
     inuse = db.query(
         "SELECT 1 FROM Rentals "
-        "WHERE product_id=%(pid)s AND rental_status IN (0,1) "
+        "WHERE product_id=%(pid)s AND rental_status IN (%(rented)s, %(pending)s, %(overdue)s) "
         "LIMIT 1",
-        pid=product_id
+        pid=product_id,
+        rented=RENTAL_STATUS_RENTED,
+        pending=RENTAL_STATUS_PENDING_RETURN,
+        overdue=RENTAL_STATUS_OVERDUE,
     ).result
     if inuse:
         return jsonify({

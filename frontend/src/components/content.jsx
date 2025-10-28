@@ -287,54 +287,7 @@ const Content = ({ id, user }) => {
         </section>
       )}
 
-      {!isAdmin && !rentalsLoading && !rentalsError && (
-        <section className="home-history">
-          <div className="home-history__head">
-            <h2>반납 완료 기록</h2>
-            <p>최근에 반납을 마친 물품을 확인할 수 있어요.</p>
-          </div>
-          {completedRentals.length === 0 ? (
-            <div className="home-history__placeholder">
-              아직 반납 완료된 기록이 없어요.
-            </div>
-          ) : (
-            <ul className="home-history__list">
-              {completedRentals.map((item) => {
-                const displayNo = item.display_no ?? item.product_id;
-                const rentalDateText = formatFullDate(item.rental_time);
-                const returnDateText = item.return_time
-                  ? formatFullDate(item.return_time)
-                  : null;
 
-                return (
-                  <li key={item.rental_id} className="home-history__item">
-                    <div className="home-history__item-head">
-                      <h3>{item.product_name}</h3>
-                      <span className="home-history__badge">반납 완료</span>
-                    </div>
-                    <dl className="home-history__meta">
-                      <div>
-                        <dt>물품 ID</dt>
-                        <dd>{displayNo ?? "-"}</dd>
-                      </div>
-                      <div>
-                        <dt>대여일</dt>
-                        <dd>{rentalDateText}</dd>
-                      </div>
-                      {returnDateText && (
-                        <div>
-                          <dt>반납일</dt>
-                          <dd>{returnDateText}</dd>
-                        </div>
-                      )}
-                    </dl>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-      )}
 
       {!isAdmin && (
       <section className="home-timeline">

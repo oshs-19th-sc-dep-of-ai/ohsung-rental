@@ -8,6 +8,7 @@ rental_return_bp = Blueprint('rental_return', __name__)
 RENTAL_STATUS_RENTED = 0           # 대여중
 RENTAL_STATUS_PENDING_RETURN = 1   # 반납대기
 RENTAL_STATUS_RETURNED = 2         # 반납완료
+RENTAL_STATUS_OVERDUE = 3          # 연체
 
 
 def _get_student_id_from_session():
@@ -25,6 +26,30 @@ def rental_request_return(rental_id):
         }), 401
 
     db = DatabaseManager()
+
+    # 연체 상태 확인
+    rental_info = db.fetch_one(
+        """
+        SELECT rental_status
+          FROM Rentals
+         WHERE id = %(rental_id)s
+           AND student_id = %(student_id)s
+        """,
+        rental_id=rental_id,
+        student_id=student_id
+    )
+
+    if not rental_info:
+        return jsonify({
+            "message": "대여 정보를 찾을 수 없습니다.",
+            "status": "error"
+        }), 404
+
+    if rental_info["rental_status"] == RENTAL_STATUS_OVERDUE:
+        return jsonify({
+            "message": "연체 상태에서는 반납 요청을 할 수 없습니다.",
+            "status": "error"
+        }), 400
 
     # 반납 '요청' 단계에서는 return_time을 찍지 않음.
     # 현재 상태가 '대여중(0)'일 때만 '반납대기(1)'로 변경.

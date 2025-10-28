@@ -1,8 +1,15 @@
 import "./UM_content.css";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import axios from "axios";
 
 axios.defaults.withCredentials = true;
+
+const RENTAL_STATUS = {
+  RENTED: 0,
+  PENDING: 1,
+  RETURNED: 2,
+  OVERDUE: 3,
+};
 
 const Content = ({ ID }) => {
   const dayArr = useMemo(() => {
@@ -14,9 +21,25 @@ const Content = ({ ID }) => {
   const daysDiff = (deadlineArr, baseArr) =>
     Math.ceil((toDate(deadlineArr) - toDate(baseArr)) / (1000 * 60 * 60 * 24));
 
+  const todayDate = useMemo(() => toDate(dayArr), [dayArr]);
+
   const [rentalData, setRentalData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const isOverdueRental = useCallback((rental) => {
+    if (!rental) return false;
+    if (rental.status === RENTAL_STATUS.OVERDUE) {
+      return true;
+    }
+    if (rental.status !== RENTAL_STATUS.RENTED) {
+      return false;
+    }
+    if (!Array.isArray(rental.deadline) || rental.deadline.length < 3) {
+      return false;
+    }
+    return todayDate > toDate(rental.deadline);
+  }, [todayDate]);
 
   useEffect(() => {
     let alive = true;
@@ -45,21 +68,30 @@ const Content = ({ ID }) => {
   }, []);
 
   const handleReturnAction = async (rental) => {
+    if (!rental) {
+      return;
+    }
+
     try {
-      if (rental.status === 1) {
+      if (rental.status === RENTAL_STATUS.PENDING) {
         const res = await axios.post(
           `http://localhost:5000/admin/approve_return/${rental.id}`,
         );
         alert(res.data?.message || "반납 승인이 완료되었습니다.");
         setRentalData((prev) => prev.filter((r) => r.id !== rental.id));
-      } else if (rental.status === 0) {
+      } else if (
+        rental.status === RENTAL_STATUS.RENTED ||
+        rental.status === RENTAL_STATUS.OVERDUE
+      ) {
         const res = await axios.post(
           `http://localhost:5000/admin/mark_pending/${rental.id}`,
         );
         alert(res.data?.message || "반납 대기로 전환했습니다.");
         setRentalData((prev) =>
           prev.map((r) =>
-            r.id === rental.id ? { ...r, status: 1, state: true } : r,
+            r.id === rental.id
+              ? { ...r, status: RENTAL_STATUS.PENDING, state: true }
+              : r,
           ),
         );
       }
@@ -69,26 +101,40 @@ const Content = ({ ID }) => {
   };
 
   const filtered = useMemo(
-    () => (rentalData || []).filter((r) => r.status !== 2),
+    () =>
+      (rentalData || []).filter(
+        (r) => r.status !== RENTAL_STATUS.RETURNED,
+      ),
     [rentalData],
   );
 
   const sortedData = useMemo(() => {
     const copied = [...filtered];
+    const safeAbsDiff = (rental) => {
+      if (!Array.isArray(rental?.deadline) || rental.deadline.length < 3) {
+        return 0;
+      }
+      return Math.abs(daysDiff(rental.deadline, dayArr));
+    };
+
     copied.sort((a, b) => {
-      const overdueA = a.status === 0 && toDate(dayArr) > toDate(a.deadline);
-      const overdueB = b.status === 0 && toDate(dayArr) > toDate(b.deadline);
-      const diffA = Math.abs(daysDiff(a.deadline, dayArr));
-      const diffB = Math.abs(daysDiff(b.deadline, dayArr));
-      if (a.status === 1 && b.status !== 1) return -1;
-      if (a.status !== 1 && b.status === 1) return 1;
-      if (a.status === 1 && b.status === 1) return diffB - diffA;
+      const pendingA = a.status === RENTAL_STATUS.PENDING;
+      const pendingB = b.status === RENTAL_STATUS.PENDING;
+      if (pendingA && !pendingB) return -1;
+      if (!pendingA && pendingB) return 1;
+      if (pendingA && pendingB) {
+        return safeAbsDiff(b) - safeAbsDiff(a);
+      }
+
+      const overdueA = isOverdueRental(a);
+      const overdueB = isOverdueRental(b);
       if (overdueA && !overdueB) return -1;
       if (!overdueA && overdueB) return 1;
-      return diffB - diffA;
+
+      return safeAbsDiff(b) - safeAbsDiff(a);
     });
     return copied;
-  }, [filtered, dayArr]);
+  }, [filtered, dayArr, isOverdueRental]);
 
   if (loading) {
     return (
@@ -122,16 +168,42 @@ const Content = ({ ID }) => {
             <div className="UMcontent__status">표시할 대여 건이 없습니다.</div>
           ) : (
             sortedData.map((rental) => {
-              const isPending = rental.status === 1;
-              const isOverdue =
-                rental.status === 0 && toDate(dayArr) > toDate(rental.deadline);
-              const diff = daysDiff(rental.deadline, dayArr);
-              const dLabel = diff >= 0 ? `D-${diff}` : `D+${Math.abs(diff)}`;
+              const isPending = rental.status === RENTAL_STATUS.PENDING;
+              const isOverdue = isOverdueRental(rental);
+              const hasDeadline =
+                Array.isArray(rental.deadline) && rental.deadline.length === 3;
+              const diff = hasDeadline ? daysDiff(rental.deadline, dayArr) : null;
+              const dLabel =
+                diff === null
+                  ? "정보 없음"
+                  : diff >= 0
+                  ? `D-${diff}`
+                  : `D+${Math.abs(diff)}`;
               const rentalItems = (rental.items || [])
                 .map((item, idx) => `${item} ${rental.count[idx]}개`)
                 .join(", ");
               const statusTone = isPending ? "pending" : isOverdue ? "overdue" : "active";
-              const statusText = isPending ? "반납 승인 대기" : isOverdue ? "연체" : "정상 진행";
+              const statusText = isPending
+                ? "반납 승인 대기"
+                : isOverdue
+                ? "연체"
+                : "정상 진행";
+              const deadlineText = hasDeadline
+                ? rental.deadline.join(". ")
+                : "정보 없음";
+              const canProcess =
+                rental.status === RENTAL_STATUS.RENTED ||
+                rental.status === RENTAL_STATUS.PENDING ||
+                rental.status === RENTAL_STATUS.OVERDUE;
+              const buttonDisabled = !canProcess;
+              const buttonLabel = isPending
+                ? "반납 승인"
+                : isOverdue
+                ? "연체 반납 처리"
+                : "반납 처리";
+              const buttonTitle = buttonDisabled
+                ? "현재 상태에서는 처리할 수 없습니다."
+                : undefined;
 
               const displayNo = rental.display_no ?? rental.product_id ?? rental.id;
               return (
@@ -152,7 +224,7 @@ const Content = ({ ID }) => {
                   <div className="block__details">
                     <div><strong>대여 품목</strong>: {rentalItems}</div>
                     <div><strong>대여일</strong>: {rental.date?.join(". ")}</div>
-                    <div><strong>반납 예정일</strong>: {rental.deadline?.join(". ")} ({dLabel})</div>
+                    <div><strong>반납 예정일</strong>: {deadlineText} ({dLabel})</div>
                   </div>
 
                   <button
@@ -160,8 +232,10 @@ const Content = ({ ID }) => {
                       isPending ? "highlight" : isOverdue ? "warn" : ""
                     }`}
                     onClick={() => handleReturnAction(rental)}
+                    disabled={buttonDisabled}
+                    title={buttonTitle}
                   >
-                    {isPending ? "반납 승인" : "반납 처리"}
+                    {buttonLabel}
                   </button>
                 </div>
               );

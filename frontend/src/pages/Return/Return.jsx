@@ -8,12 +8,14 @@ const STATUS_LABELS = {
   0: "대여 중",
   1: "반납 신청",
   2: "반납 완료",
+  3: "연체",
 };
 
 const STATUS_TEXT_TO_CODE = {
   "대여 중": 0,
   "반납 신청": 1,
   "반납 완료": 2,
+  "연체": 3,
 };
 
 const normalizeRentals = (items) =>
@@ -131,7 +133,16 @@ function Return() {
   );
 
   const handleReturn = async (rental) => {
-    if (!rental || rental.status_code !== 0 || processingId) {
+    if (!rental || processingId) {
+      return;
+    }
+
+    if (rental.status_code === 3) {
+      alert("연체 상태에서는 반납 신청을 진행할 수 없습니다. 학생회에 문의해 주세요.");
+      return;
+    }
+
+    if (rental.status_code !== 0) {
       return;
     }
 
@@ -164,21 +175,47 @@ function Return() {
     const isPending = item.status_code === 1;
     const isRented = item.status_code === 0;
     const isCompleted = item.status_code === 2;
+    const isOverdue = item.status_code === 3;
     const disableAction =
-      !isActiveSection || !isRented || processingId === item.rental_id;
-    const buttonText = isPending
+      !isActiveSection ||
+      !isRented ||
+      processingId === item.rental_id ||
+      isOverdue;
+    const isProcessing = processingId === item.rental_id;
+    const buttonText = isOverdue
+      ? "연체 상태"
+      : isPending
       ? "승인 대기중"
       : isRented
       ? "반납 신청"
       : "완료";
-    const statusTone = isCompleted ? "completed" : isPending ? "pending" : "active";
+    const statusTone = isCompleted
+      ? "completed"
+      : isPending
+      ? "pending"
+      : isOverdue
+      ? "overdue"
+      : "active";
 
     const displayNo = item.display_no ?? item.product_id;
+    const cardClasses = [
+      "rental-card",
+      isCompleted && "rental-card--completed",
+      isOverdue && "rental-card--overdue",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const actionClasses = [
+      "return-card__action",
+      isOverdue && "return-card__action--blocked",
+    ]
+      .filter(Boolean)
+      .join(" ");
 
     return (
       <article
         key={item.rental_id}
-        className={`rental-card${isCompleted ? " rental-card--completed" : ""}`}
+        className={cardClasses}
       >
         <div className="rental-card__header">
           <div>
@@ -186,7 +223,7 @@ function Return() {
             <p className="rental-card__subtitle">물품 ID · {displayNo}</p>
           </div>
           <span className={`status-badge status-badge--${statusTone}`}>
-            {item.status}
+            {isOverdue ? "연체중" : item.status}
           </span>
         </div>
 
@@ -208,10 +245,21 @@ function Return() {
             type="button"
             onClick={() => handleReturn(item)}
             disabled={disableAction}
-            className="return-card__action"
+            className={actionClasses}
+            title={
+              isOverdue
+                ? "연체 상태에서는 온라인 반납 신청이 제한됩니다."
+                : undefined
+            }
           >
-            {processingId === item.rental_id ? "처리 중..." : buttonText}
+            {isProcessing ? "처리 중..." : buttonText}
           </button>
+        )}
+
+        {isOverdue && (
+          <p className="return-card__note">
+            온라인 반납 신청이 제한되었습니다.
+          </p>
         )}
       </article>
     );

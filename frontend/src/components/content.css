@@ -144,6 +144,34 @@
   box-shadow: 0 26px 48px -30px rgba(30, 41, 59, 0.85);
 }
 
+.home-rentals__item--overdue {
+  background: rgba(153, 27, 27, 0.24);
+  border-color: rgba(248, 113, 113, 0.85);
+  box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.6);
+  animation: home-rentals-overdue-blink 9.2s ease-in-out infinite;
+}
+
+.home-rentals__item--overdue .home-rentals__item-head h3 {
+  color: #fee2e2;
+}
+
+.home-rentals__item--overdue .home-rentals__meta dd {
+  color: #fee2e2;
+}
+
+@keyframes home-rentals-overdue-blink {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.6);
+    border-color: rgba(248, 113, 113, 0.92);
+  }
+
+  50% {
+    box-shadow: 0 0 0 10px rgba(248, 113, 113, 0.16);
+    border-color: rgba(248, 113, 113, 0.35);
+  }
+}
+
 .home-rentals__item-head {
   display: flex;
   align-items: center;
@@ -179,6 +207,12 @@
 .home-rentals__status--pending {
   background: rgba(250, 204, 21, 0.18);
   color: #facc15;
+}
+
+.home-rentals__status--overdue {
+  background: rgba(248, 113, 113, 0.18);
+  color: #f87171;
+  box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.4);
 }
 
 .home-rentals__status--default {

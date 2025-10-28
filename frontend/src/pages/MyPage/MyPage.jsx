@@ -92,7 +92,7 @@ function MyPage() {
     if (Math.abs(diff) < 1000 * 60) {
       return "지금까지";
     }
-    return "기한 초과";
+    return "연체중";
   };
 
   const renderStatusBadge = (status, statusCode) => {

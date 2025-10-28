@@ -1,6 +1,6 @@
 import "./content.css";
 import { useLocation } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 const fullDateFormatter = new Intl.DateTimeFormat("ko-KR", {
@@ -64,7 +64,7 @@ const formatCountdown = (targetDate) => {
   if (Math.abs(diff) < 1000 * 60) {
     return "지금까지";
   }
-  return "기한 초과";
+  return "연체중";
 };
 
 const getStatusTone = (statusCode) => {
@@ -161,6 +161,32 @@ const Content = ({ id, user }) => {
     [rentals],
   );
 
+  const isRentalOverdue = useCallback((item) => {
+    const plannedReturn = derivePlannedReturnDate(
+      item.expected_return_time,
+      item.rental_time,
+    );
+    return (
+      Boolean(plannedReturn) &&
+      plannedReturn.getTime() < Date.now() &&
+      item.status_code !== 2
+    );
+  }, []);
+
+  const sortedActiveRentals = useMemo(() => {
+    return activeRentals
+      .map((item, index) => ({ item, index }))
+      .sort((a, b) => {
+        const overdueA = isRentalOverdue(a.item);
+        const overdueB = isRentalOverdue(b.item);
+        if (overdueA === overdueB) {
+          return a.index - b.index;
+        }
+        return overdueA ? -1 : 1;
+      })
+      .map(({ item }) => item);
+  }, [activeRentals, isRentalOverdue]);
+
   const journeySteps = isAdmin
     ? [
         {
@@ -238,13 +264,13 @@ const Content = ({ id, user }) => {
             <div className="home-rentals__placeholder" role="alert">
               {rentalsError}
             </div>
-          ) : activeRentals.length === 0 ? (
+          ) : sortedActiveRentals.length === 0 ? (
             <div className="home-rentals__placeholder">
               현재 대여 중인 물품이 없어요.
             </div>
           ) : (
             <ul className="home-rentals__list">
-              {activeRentals.map((item) => {
+              {sortedActiveRentals.map((item) => {
                 const plannedReturn = derivePlannedReturnDate(
                   item.expected_return_time,
                   item.rental_time,
@@ -255,14 +281,26 @@ const Content = ({ id, user }) => {
                 const countdown = plannedReturn
                   ? formatCountdown(plannedReturn)
                   : "정보 없음";
-                const tone = getStatusTone(item.status_code);
+                const isOverdue =
+                  Boolean(plannedReturn) &&
+                  plannedReturn.getTime() < Date.now() &&
+                  item.status_code !== 2;
+                const tone = isOverdue
+                  ? "overdue"
+                  : getStatusTone(item.status_code);
+                const statusLabel = item.status ?? "상태 정보 없음";
 
                 return (
-                  <li key={item.rental_id} className="home-rentals__item">
+                  <li
+                    key={item.rental_id}
+                    className={`home-rentals__item${
+                      isOverdue ? " home-rentals__item--overdue" : ""
+                    }`}
+                  >
                     <div className="home-rentals__item-head">
                       <h3>{item.product_name}</h3>
                       <span className={`home-rentals__status home-rentals__status--${tone}`}>
-                        {item.status ?? "상태 정보 없음"}
+                        {isOverdue ? "연체" : statusLabel}
                       </span>
                     </div>
                     <dl className="home-rentals__meta">

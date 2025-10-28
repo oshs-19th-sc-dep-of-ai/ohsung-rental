@@ -167,10 +167,11 @@ def mark_pending(rental_id):
         UPDATE Rentals
            SET rental_status = %(pending)s
          WHERE id = %(rental_id)s
-           AND rental_status = %(rented)s
+           AND rental_status IN (%(rented)s, %(overdue)s)
         """,
         pending=RENTAL_STATUS_PENDING_RETURN,
         rented=RENTAL_STATUS_RENTED,
+        overdue=RENTAL_STATUS_OVERDUE,
         rental_id=rental_id
     )
     db.commit()

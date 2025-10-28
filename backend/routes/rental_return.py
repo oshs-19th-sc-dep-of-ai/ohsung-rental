@@ -27,6 +27,23 @@ def rental_request_return(rental_id):
 
     db = DatabaseManager()
 
+    # rental_time 기준 2일 이상 경과한 대여 건은 연체 상태로 전환
+    db.query(
+        """
+        UPDATE Rentals
+           SET rental_status = %(overdue)s
+         WHERE id = %(rental_id)s
+           AND student_id = %(student_id)s
+           AND rental_status != %(overdue)s
+           AND rental_time IS NOT NULL
+           AND rental_time <= DATE_SUB(NOW(), INTERVAL 2 DAY)
+        """,
+        overdue=RENTAL_STATUS_OVERDUE,
+        rental_id=rental_id,
+        student_id=student_id,
+    )
+    db.commit()
+
     # 연체 상태 확인
     rental_info = db.fetch_one(
         """

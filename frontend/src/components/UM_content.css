@@ -122,7 +122,36 @@
 
 /* State tinting */
 .UMcontent .container .block.warn {
-  background: linear-gradient(140deg, rgba(30, 41, 59, 0.92), rgba(129, 140, 248, 0.32));
+  background: linear-gradient(140deg, rgba(153, 27, 27, 0.24), rgba(248, 113, 113, 0.18));
+  border-color: rgba(248, 113, 113, 0.85);
+  box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.6);
+  animation: um-overdue-blink 9.2s ease-in-out infinite;
+}
+
+.UMcontent .container .block.warn .block__title {
+  color: #fee2e2;
+}
+
+.UMcontent .container .block.warn .block__subtitle,
+.UMcontent .container .block.warn .block__details {
+  color: rgba(255, 228, 230, 0.88);
+}
+
+.UMcontent .container .block.warn .block__details strong {
+  color: #fecaca;
+}
+
+@keyframes um-overdue-blink {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.55);
+    border-color: rgba(248, 113, 113, 0.9);
+  }
+
+  50% {
+    box-shadow: 0 0 0 12px rgba(248, 113, 113, 0.18);
+    border-color: rgba(248, 113, 113, 0.34);
+  }
 }
 
 .UMcontent .container .block.highlight {
@@ -158,8 +187,9 @@
 }
 
 .status-badge--overdue {
-  background: rgba(129, 140, 248, 0.22);
-  color: #c7d2fe;
+  background: rgba(248, 113, 113, 0.22);
+  color: #f87171;
+  box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.36);
 }
 
 /* Action button themed like return */
@@ -184,7 +214,9 @@
 }
 
 .UMcontent .container .block .DeleteButton.warn {
-  background: linear-gradient(120deg, rgba(124, 58, 237, 0.62), rgba(99, 102, 241, 0.58)) !important;
+  background: linear-gradient(120deg, rgba(248, 113, 113, 0.78), rgba(185, 28, 28, 0.72)) !important;
+  border-color: rgba(248, 113, 113, 0.56);
+  box-shadow: 0 26px 44px -26px rgba(185, 28, 28, 0.65);
 }
 
 .UMcontent .container .block .DeleteButton.highlight {
@@ -219,7 +251,7 @@
 }
 
 .legend-chip.orange { background: rgba(250, 204, 21, 0.18); color: #facc15; }
-.legend-chip.purple { background: rgba(129, 140, 248, 0.2); color: #c7d2fe; }
+.legend-chip.purple { background: rgba(248, 113, 113, 0.18); color: #f87171; }
 .legend-chip.blue { background: rgba(16, 185, 129, 0.18); color: #5eead4; }
 
 @media (min-width: 640px) {

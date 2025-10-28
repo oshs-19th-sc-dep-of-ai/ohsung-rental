@@ -19,17 +19,6 @@ def login():
             "status": "error"
         }), 400
 
-    # 관리자 로그인 처리
-    # if input_student_id == ADMIN_ID and input_student_pw == ADMIN_PASSWORD:
-    #     session['admin_id'] = ADMIN_ID
-    #     session['is_admin'] = True
-    #     return jsonify({
-    #         "message": "관리자 로그인 성공!",
-    #         "status": "admin",
-    #         "admin_id": ADMIN_ID,
-    #         "is_admin": True
-    #     }), 200
-
     db = DatabaseManager()
 
     # 학생 로그인 처리

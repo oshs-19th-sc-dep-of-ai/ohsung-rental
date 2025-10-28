@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import axios from "axios";
 import Header from "../../components/M_header";
 import "./MyPage.css";
 import { useNavigate } from "react-router-dom";
+import { derivePlannedReturnDate } from "../../components/content";
 
 function MyPage() {
   const [studentInfo, setStudentInfo] = useState(null);
@@ -76,7 +77,7 @@ function MyPage() {
 
   const renderDeadline = (expected) => {
     if (!expected) {
-      return "반납 완료";
+      return "기한 정보 없음";
     }
     const now = new Date();
     const target = new Date(expected);
@@ -95,16 +96,39 @@ function MyPage() {
     return "연체중";
   };
 
-  const renderStatusBadge = (status, statusCode) => {
+  const isRentalOverdue = useCallback((item) => {
+    if (!item) {
+      return false;
+    }
+    const numericStatus = Number(item.status_code);
+    if (numericStatus === 3) {
+      return true;
+    }
+    if (numericStatus === 2) {
+      return false;
+    }
+    const plannedReturn = derivePlannedReturnDate(
+      item.expected_return_time,
+      item.rental_time,
+    );
+    return Boolean(plannedReturn) && plannedReturn.getTime() < Date.now();
+  }, []);
+
+  const renderStatusBadge = (status, statusCode, item) => {
     let badgeClass = "mypage-badge";
-    if (statusCode === 0) {
+    const numericStatus = Number(statusCode);
+    const overdue = isRentalOverdue(item);
+    if (overdue) {
+      badgeClass += " mypage-badge--overdue";
+    } else if (numericStatus === 0) {
       badgeClass += " mypage-badge--active";
-    } else if (statusCode === 1) {
+    } else if (numericStatus === 1) {
       badgeClass += " mypage-badge--pending";
-    } else if (statusCode === 2) {
+    } else if (numericStatus === 2) {
       badgeClass += " mypage-badge--completed";
     }
-    return <span className={badgeClass}>{status}</span>;
+    const label = overdue ? "연체중" : status;
+    return <span className={badgeClass}>{label}</span>;
   };
 
   const renderReturnInfo = (rentalTime, returnTime) => {
@@ -224,7 +248,7 @@ function MyPage() {
                           {renderReturnInfo(item.rental_time, item.return_time)}
                         </td>
                         <td data-label="상태">
-                          {renderStatusBadge(item.status, item.status_code)}
+                          {renderStatusBadge(item.status, item.status_code, item)}
                         </td>
                         <td data-label="반납 예정">
                           {renderDeadline(item.expected_return_time)}

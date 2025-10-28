@@ -183,7 +183,7 @@ function Return() {
       isOverdue;
     const isProcessing = processingId === item.rental_id;
     const buttonText = isOverdue
-      ? "연체 상태"
+      ? "연체중"
       : isPending
       ? "승인 대기중"
       : isRented

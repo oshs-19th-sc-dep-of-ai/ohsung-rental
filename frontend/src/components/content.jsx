@@ -22,7 +22,7 @@ const formatFullDate = (value) => {
   return parsed ? fullDateFormatter.format(parsed) : "-";
 };
 
-const derivePlannedReturnDate = (expected, rentalTime) => {
+export const derivePlannedReturnDate = (expected, rentalTime) => {
   const expectedDate = toDate(expected);
   if (expectedDate) {
     return expectedDate;
@@ -161,16 +161,21 @@ const Content = ({ id, user }) => {
     [rentals],
   );
 
-  const isRentalOverdue = useCallback((item) => {
-    const plannedReturn = derivePlannedReturnDate(
-      item.expected_return_time,
-      item.rental_time,
-    );
-    return (
-      Boolean(plannedReturn) &&
-      plannedReturn.getTime() < Date.now() &&
-      item.status_code !== 2
-    );
+  const isRentalOverdue = useCallback((item, plannedReturnOverride) => {
+    if (!item) {
+      return false;
+    }
+    const statusCode = Number(item.status_code);
+    if (statusCode === 3) {
+      return true;
+    }
+    if (statusCode === 2) {
+      return false;
+    }
+    const plannedReturn =
+      plannedReturnOverride ??
+      derivePlannedReturnDate(item.expected_return_time, item.rental_time);
+    return Boolean(plannedReturn) && plannedReturn.getTime() < Date.now();
   }, []);
 
   const sortedActiveRentals = useMemo(() => {
@@ -281,10 +286,7 @@ const Content = ({ id, user }) => {
                 const countdown = plannedReturn
                   ? formatCountdown(plannedReturn)
                   : "정보 없음";
-                const isOverdue =
-                  Boolean(plannedReturn) &&
-                  plannedReturn.getTime() < Date.now() &&
-                  item.status_code !== 2;
+                const isOverdue = isRentalOverdue(item, plannedReturn);
                 const tone = isOverdue
                   ? "overdue"
                   : getStatusTone(item.status_code);

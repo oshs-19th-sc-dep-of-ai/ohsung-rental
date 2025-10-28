@@ -12,6 +12,7 @@ rental_bp = Blueprint('rental', __name__)
 RENTAL_STATUS_RENTED = 0           # 대여중
 RENTAL_STATUS_PENDING_RETURN = 1   # 반납대기
 RENTAL_STATUS_RETURNED = 2         # 반납완료
+RENTAL_STATUS_OVERDUE = 3          # 연체
 
 def _get_current_sid():
     """
@@ -29,6 +30,21 @@ def _get_current_sid():
 @cross_origin(supports_credentials=True)  # 자격증명(쿠키) 포함 요청 허용
 def rent_product(product_id):
     db = DatabaseManager()
+
+    # 연체 상태 갱신
+    db.query(
+        """
+        UPDATE Rentals
+           SET rental_status = %(overdue)s
+         WHERE rental_status IN (%(rented)s, %(pending)s)
+           AND return_time IS NOT NULL
+           AND return_time < NOW()
+        """,
+        overdue=RENTAL_STATUS_OVERDUE,
+        rented=RENTAL_STATUS_RENTED,
+        pending=RENTAL_STATUS_PENDING_RETURN,
+    )
+    db.commit()
 
     # 1) 로그인 확인
     sid = _get_current_sid()
@@ -70,6 +86,21 @@ def rent_product(product_id):
 @cross_origin(supports_credentials=True)
 def rental_request():
     db = DatabaseManager()
+
+    # 연체 상태 갱신
+    db.query(
+        """
+        UPDATE Rentals
+           SET rental_status = %(overdue)s
+         WHERE rental_status IN (%(rented)s, %(pending)s)
+           AND return_time IS NOT NULL
+           AND return_time < NOW()
+        """,
+        overdue=RENTAL_STATUS_OVERDUE,
+        rented=RENTAL_STATUS_RENTED,
+        pending=RENTAL_STATUS_PENDING_RETURN,
+    )
+    db.commit()
 
     # 1) 로그인 확인
     sid = _get_current_sid()

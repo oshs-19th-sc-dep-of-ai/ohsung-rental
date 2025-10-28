@@ -8,6 +8,7 @@ admin_bp = Blueprint('admin', __name__)
 RENTAL_STATUS_RENTED = 0           # 대여중
 RENTAL_STATUS_PENDING_RETURN = 1   # 반납대기
 RENTAL_STATUS_RETURNED = 2         # 반납완료
+RENTAL_STATUS_OVERDUE = 3          # 연체
 
 
 def _is_admin():

@@ -112,7 +112,7 @@ const Content = ({ id, user }) => {
   const userName = user?.name || (isAdmin ? "관리자" : null);
 
   useEffect(() => {
-    if (isAdmin || !resolvedId) {
+    if (!resolvedId) {
       setRentals([]);
       setRentalsLoading(false);
       setRentalsError(null);
@@ -149,15 +149,10 @@ const Content = ({ id, user }) => {
     return () => {
       active = false;
     };
-  }, [isAdmin, resolvedId]);
+  }, [resolvedId]);
 
   const activeRentals = useMemo(
     () => rentals.filter((item) => item.status_code !== 2),
-    [rentals],
-  );
-
-  const completedRentals = useMemo(
-    () => rentals.filter((item) => item.status_code === 2),
     [rentals],
   );
 
@@ -192,56 +187,30 @@ const Content = ({ id, user }) => {
       .map(({ item }) => item);
   }, [activeRentals, isRentalOverdue]);
 
-  const journeySteps = isAdmin
-    ? [
-        {
-          title: "현황 파악",
-          detail: "대여·반납 통계를 확인하고 주의가 필요한 건을 체크합니다.",
-        },
-        {
-          title: "대응 및 조정",
-          detail: "반납 지연이나 파손 등 이슈를 기록하고 필요한 안내를 진행합니다.",
-        },
-        {
-          title: "커뮤니케이션",
-          detail: "학생과 소통하며 원활한 대여 문화를 만들어 갑니다.",
-        },
-      ]
-    : [
-        {
-          title: "대여 선택",
-          detail: "원하는 물품을 고르고 주의사항을 확인한 뒤 대여합니다.",
-        },
-        {
-          title: "책임 있게 사용",
-          detail: "정해진 기간 동안 깨끗하게 사용하고 손상에 주의하세요.",
-        },
-        {
-          title: "반납",
-          detail: "반납 신청 후 안내에 따라 지정 장소에 물품을 반환하세요.",
-        },
-      ];
+  const journeySteps = [
+    {
+      title: "대여 선택",
+      detail: "원하는 물품을 고르고 주의사항을 확인한 뒤 대여합니다.",
+    },
+    {
+      title: "책임 있게 사용",
+      detail: "정해진 기간 동안 깨끗하게 사용하고 손상에 주의하세요.",
+    },
+    {
+      title: "반납",
+      detail: "반납 신청 후 안내에 따라 지정 장소에 물품을 반환하세요.",
+    },
+  ];
 
-
-
-  const noteBody = isAdmin
-    ? "학생들의 대여 문화를 지키는 핵심 관리자입니다. 대여 현황을 꼼꼼하게 살피고 문제가 생기면 즉시 대응해 주세요."
-    : "대여일로부터 2일 이내 반납이 원칙입니다. 파손이나 분실이 발생하면 학생회를 통해 배상 절차가 진행될 수 있어요.";
+  const noteBody =
+    "대여일로부터 2일 이내 반납이 원칙입니다. 파손이나 분실이 발생하면 학생회를 통해 배상 절차가 진행될 수 있어요.";
 
   return (
     <div className="home-content">
       <section className="home-hero">
         <div className="home-hero__copy">
-          <h1>
-            {isAdmin
-              ? "대여 관리 계정입니다"
-              : "필요한 순간, 작은 도움을 건네는 곳"}
-          </h1>
-          <p>
-            {isAdmin
-              ? "대여와 반납 흐름을 한눈에 파악하세요."
-              : "필요할때 있는 당신의 물품 대여 서비스."}
-          </p>
+          <h1>필요한 순간, 작은 도움을 건네는 곳</h1>
+          <p>필요할때 있는 당신의 물품 대여 서비스.</p>
           <div className="home-hero__meta">
             <div className="home-hero__meta-card">
               <span>오늘</span>
@@ -257,75 +226,67 @@ const Content = ({ id, user }) => {
         </div>
       </section>
 
-      {!isAdmin && (
-        <section className="home-rentals">
-          <div className="home-rentals__head">
-            <h2>나의 대여 현황</h2>
-            <p>현재 대여 중인 물품과 반납 일정을 확인하세요.</p>
+      <section className="home-rentals">
+        <div className="home-rentals__head">
+          <h2>나의 대여 현황</h2>
+          <p>현재 대여 중인 물품과 반납 일정을 확인하세요.</p>
+        </div>
+        {rentalsLoading ? (
+          <div className="home-rentals__placeholder">대여 정보를 불러오는 중...</div>
+        ) : rentalsError ? (
+          <div className="home-rentals__placeholder" role="alert">
+            {rentalsError}
           </div>
-          {rentalsLoading ? (
-            <div className="home-rentals__placeholder">대여 정보를 불러오는 중...</div>
-          ) : rentalsError ? (
-            <div className="home-rentals__placeholder" role="alert">
-              {rentalsError}
-            </div>
-          ) : sortedActiveRentals.length === 0 ? (
-            <div className="home-rentals__placeholder">
-              현재 대여 중인 물품이 없어요.
-            </div>
-          ) : (
-            <ul className="home-rentals__list">
-              {sortedActiveRentals.map((item) => {
-                const plannedReturn = derivePlannedReturnDate(
-                  item.expected_return_time,
-                  item.rental_time,
-                );
-                const dueText = plannedReturn
-                  ? formatFullDate(plannedReturn)
-                  : "반납 예정일 정보 없음";
-                const countdown = plannedReturn
-                  ? formatCountdown(plannedReturn)
-                  : "정보 없음";
-                const isOverdue = isRentalOverdue(item, plannedReturn);
-                const tone = isOverdue
-                  ? "overdue"
-                  : getStatusTone(item.status_code);
-                const statusLabel = item.status ?? "상태 정보 없음";
+        ) : sortedActiveRentals.length === 0 ? (
+          <div className="home-rentals__placeholder">
+            현재 대여 중인 물품이 없어요.
+          </div>
+        ) : (
+          <ul className="home-rentals__list">
+            {sortedActiveRentals.map((item) => {
+              const plannedReturn = derivePlannedReturnDate(
+                item.expected_return_time,
+                item.rental_time,
+              );
+              const countdown = plannedReturn
+                ? formatCountdown(plannedReturn)
+                : "정보 없음";
+              const isOverdue = isRentalOverdue(item, plannedReturn);
+              const tone = isOverdue
+                ? "overdue"
+                : getStatusTone(item.status_code);
+              const statusLabel = item.status ?? "상태 정보 없음";
 
-                return (
-                  <li
-                    key={item.rental_id}
-                    className={`home-rentals__item${
-                      isOverdue ? " home-rentals__item--overdue" : ""
-                    }`}
-                  >
-                    <div className="home-rentals__item-head">
-                      <h3>{item.product_name}</h3>
-                      <span className={`home-rentals__status home-rentals__status--${tone}`}>
-                        {isOverdue ? "연체" : statusLabel}
-                      </span>
+              return (
+                <li
+                  key={item.rental_id}
+                  className={`home-rentals__item${
+                    isOverdue ? " home-rentals__item--overdue" : ""
+                  }`}
+                >
+                  <div className="home-rentals__item-head">
+                    <h3>{item.product_name}</h3>
+                    <span className={`home-rentals__status home-rentals__status--${tone}`}>
+                      {isOverdue ? "연체" : statusLabel}
+                    </span>
+                  </div>
+                  <dl className="home-rentals__meta">
+                    <div>
+                      <dt>대여일</dt>
+                      <dd>{formatFullDate(item.rental_time)}</dd>
                     </div>
-                    <dl className="home-rentals__meta">
-                      <div>
-                        <dt>대여일</dt>
-                        <dd>{formatFullDate(item.rental_time)}</dd>
-                      </div>
-                      <div>
-                        <dt>남은 시간</dt>
-                        <dd>{countdown}</dd>
-                      </div>
-                    </dl>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-      )}
+                    <div>
+                      <dt>남은 시간</dt>
+                      <dd>{countdown}</dd>
+                    </div>
+                  </dl>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
 
-
-
-      {!isAdmin && (
       <section className="home-timeline">
         <div className="home-timeline__head">
           <h2>이용 가이드</h2>
@@ -345,13 +306,11 @@ const Content = ({ id, user }) => {
           ))}
         </ol>
       </section>
-      )}
 
-      {!isAdmin && (
       <section className="home-note">
         <div className="home-note__card">
           <div className="home-note__halo" aria-hidden="true" />
-          <h3>{isAdmin ? "관리자 체크 포인트" : "대여 시 꼭 기억하세요"}</h3>
+          <h3>대여 시 꼭 기억하세요</h3>
           <p>{noteBody}</p>
           {!resolvedId && (
             <p className="home-note__warning">
@@ -361,7 +320,6 @@ const Content = ({ id, user }) => {
           )}
         </div>
       </section>
-      )}
     </div>
   );
 };

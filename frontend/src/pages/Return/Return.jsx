@@ -98,10 +98,28 @@ function Return() {
     [rentals],
   );
 
-  const inProgressRentals = useMemo(
-    () => rentals.filter((item) => item.status_code !== 2),
-    [rentals],
-  );
+  const inProgressRentals = useMemo(() => {
+    const priority = (code) => {
+      if (code === 3) {
+        return 0; // 연체 우선 표시
+      }
+      if (code === 0) {
+        return 1; // 대여 중
+      }
+      return 2; // 반납 신청 등 기타
+    };
+    return rentals
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => item.status_code !== 2)
+      .sort((a, b) => {
+        const diff = priority(a.item.status_code) - priority(b.item.status_code);
+        if (diff !== 0) {
+          return diff;
+        }
+        return a.index - b.index;
+      })
+      .map(({ item }) => item);
+  }, [rentals]);
 
   const completedRentals = useMemo(
     () => rentals.filter((item) => item.status_code === 2),

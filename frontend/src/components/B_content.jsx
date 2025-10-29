@@ -40,13 +40,30 @@ export default function BContent({ ID }) {
     loadProducts(selectedItem);
   }, [selectedItem]);
 
-  const selectedUnit = useMemo(
+  const blockedDisplayNos = useMemo(
     () =>
-      units.find(
-        (unit) => unit.display_no === selectedNo && unit.is_available === 1,
+      new Set(
+        units
+          .filter((unit) => unit.is_available === 3)
+          .map((unit) => unit.display_no),
       ),
-    [units, selectedNo],
+    [units],
   );
+
+  const selectedUnit = useMemo(() => {
+    if (selectedNo == null || blockedDisplayNos.has(selectedNo)) {
+      return null;
+    }
+    return units.find(
+      (unit) => unit.display_no === selectedNo && unit.is_available === 1,
+    );
+  }, [units, selectedNo, blockedDisplayNos]);
+
+  useEffect(() => {
+    if (selectedNo != null && blockedDisplayNos.has(selectedNo)) {
+      setSelectedNo(null);
+    }
+  }, [blockedDisplayNos, selectedNo]);
 
   const categorySummary = useMemo(() => {
     return categories.reduce(
@@ -72,11 +89,17 @@ export default function BContent({ ID }) {
       alert("로그인이 필요합니다.");
       return;
     }
+    if (blockedDisplayNos.has(selectedNo)) {
+      alert("선택한 번호는 현재 대여할 수 없습니다.");
+      return;
+    }
     setBusy(true);
     try {
       const chosen = units.find(
         (unit) =>
-          unit.display_no === selectedNo && unit.is_available === 1,
+          unit.display_no === selectedNo &&
+          unit.is_available === 1 &&
+          !blockedDisplayNos.has(unit.display_no),
       );
       if (!chosen) {
         alert("선택한 번호를 다시 확인해주세요.");
@@ -169,7 +192,8 @@ export default function BContent({ ID }) {
             <div className="borrow-grid">
               {units.map((unit) => {
                 const picked = selectedNo === unit.display_no;
-                const disabled = unit.is_available === 0 || busy;
+                const isBlocked = blockedDisplayNos.has(unit.display_no);
+                const disabled = unit.is_available === 0 || isBlocked || busy;
                 return (
                   <button
                     key={unit.product_id}
@@ -180,7 +204,9 @@ export default function BContent({ ID }) {
                     } ${disabled ? "is-disabled" : ""}`}
                     onClick={() => setSelectedNo(unit.display_no)}
                     aria-pressed={picked}
-                    aria-label={`${unit.display_no}번${picked ? " (선택됨)" : ""}`}
+                    aria-label={`${unit.display_no}번${
+                      picked ? " (선택됨)" : ""
+                    }${isBlocked ? " (대여 불가)" : ""}`}
                   >
                     <span>{unit.display_no}</span>
                   </button>

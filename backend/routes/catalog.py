@@ -18,19 +18,37 @@ def list_categories():
         p.category,
         COUNT(*) AS total,
         SUM(
-          CASE WHEN EXISTS (
-            SELECT 1 FROM Rentals r
-            WHERE r.product_id = p.product_id
-              AND r.rental_status IN (0,1)  -- 0: 대여중, 1: 반납대기
-          ) THEN 0 ELSE 1 END
-        ) AS available
+          CASE
+            WHEN EXISTS (
+              SELECT 1 FROM Rentals r
+              WHERE r.product_id = p.product_id
+                AND r.rental_status IN (0,1,3)  -- 대여중/반납대기/연체는 미대여 처리
+            ) THEN 0
+            ELSE 1
+          END
+        ) AS available,
+        MAX(
+          CASE
+            WHEN EXISTS (
+              SELECT 1 FROM Rentals r
+              WHERE r.product_id = p.product_id
+                AND r.rental_status = 3  -- 3: 연체
+            ) THEN 3
+            WHEN EXISTS (
+              SELECT 1 FROM Rentals r
+              WHERE r.product_id = p.product_id
+                AND r.rental_status IN (0,1)
+            ) THEN 0
+            ELSE 1
+          END
+        ) AS availability_state
       FROM Products p
       WHERE p.available = 1
       GROUP BY p.category
       ORDER BY p.category
     """
     res = db.query_many(sql, {})  # 쿼리값
-    rows = _as_dict_rows(res.result, ["category", "total", "available"])
+    rows = _as_dict_rows(res.result, ["category", "total", "available", "availability_state"])
     return jsonify({"status": "success", "categories": rows}), 200
 
 @catalog_bp.route("/products", methods=["GET"])
@@ -45,11 +63,19 @@ def list_products():
         p.product_id,
         p.product_name,
         p.display_no AS display_no,
-        CASE WHEN EXISTS (
-          SELECT 1 FROM Rentals r
-          WHERE r.product_id = p.product_id
-            AND r.rental_status IN (0,1)
-        ) THEN 0 ELSE 1 END AS is_available
+        CASE
+          WHEN EXISTS (
+            SELECT 1 FROM Rentals r
+            WHERE r.product_id = p.product_id
+              AND r.rental_status = 3  -- 3: 연체
+          ) THEN 3
+          WHEN EXISTS (
+            SELECT 1 FROM Rentals r
+            WHERE r.product_id = p.product_id
+              AND r.rental_status IN (0,1)
+          ) THEN 0
+          ELSE 1
+        END AS is_available
       FROM Products p
       WHERE p.available = 1 AND p.category = %(category)s
       ORDER BY p.display_no

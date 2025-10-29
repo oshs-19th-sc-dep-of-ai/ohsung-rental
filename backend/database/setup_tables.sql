@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS Students (
     student_id   CHAR(7)   PRIMARY KEY,
     student_name VARCHAR(128)  NOT NULL,
     student_pw   CHAR(64)      NOT NULL,
-	is_admin     BOOLEAN   DEFAULT FALSE
+    is_admin     BOOLEAN   DEFAULT FALSE,
+    grade        INT         NOT NULL
 );
 
 -- 물품 테이블 (Products)

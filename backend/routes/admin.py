@@ -141,6 +141,7 @@ def list_rentals():
 
         result.append({
             "id": rid,
+            "student_id": sid,
             "name": sname,
             "items": [pname],       # Rentals는 단일 product_id
             "count": [1],           # 수량 1(필요 시 스키마 확장)

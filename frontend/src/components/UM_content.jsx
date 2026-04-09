@@ -215,7 +215,9 @@ const Content = ({ ID }) => {
                 >
                   <div className="block__head">
                     <div>
-                      <h4 className="block__title">{rental.name}</h4>
+                      <h4 className="block__title">
+                        {rental.name} {rental.student_id && `(${rental.student_id})`}
+                      </h4>
                       <p className="block__subtitle">물품 ID · {displayNo}</p>
                     </div>
                     <span className={`status-badge status-badge--${statusTone}`}>{statusText}</span>

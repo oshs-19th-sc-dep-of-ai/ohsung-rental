@@ -7,7 +7,7 @@
         "KeyPrefix": "prefix"
     },
     "Database": {
-        "Host": "localhost",
+        "Host": "mysql",
         "Username": "root",
         "Password": "root"
     }

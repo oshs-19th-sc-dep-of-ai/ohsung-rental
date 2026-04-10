@@ -20,5 +20,17 @@ services:
     volumes:
       - db_data:/var/lib/mysql  # 데이터 영구 저장
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql # 초기화 스크립트(optional)
+
+  backend:
+    build: .
+    container_name: backend_container
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      TZ: Asia/Seoul
+    depends_on:
+      - mysql
+
 volumes:
   db_data:
